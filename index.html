@@ -1,0 +1,124 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+  <meta name="theme-color" content="#070a12">
+  <title>GLOAMFALL — Endless Survivors</title>
+  <link rel="icon" href="data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20viewBox='0%200%2032%2032'%3E%3Crect%20width='32'%20height='32'%20rx='8'%20fill='%23070a12'/%3E%3Cpath%20d='M16%204l9%2012-9%2012-9-12z'%20fill='%235eead4'/%3E%3C/svg%3E">
+  <link rel="stylesheet" href="./styles.css">
+</head>
+<body>
+  <div id="app">
+    <canvas id="game" aria-hidden="true"></canvas>
+    <div id="vignette" aria-hidden="true"></div>
+
+    <div id="hud" class="hidden">
+      <header class="hud-top">
+        <div class="hud-left panel">
+          <div class="portrait" id="hudPortrait">✦</div>
+          <div class="meta">
+            <div class="meta-row"><span class="hud-name" id="hudName">VESPER</span><span class="level" id="hudLevel">LV 1</span></div>
+            <div class="xpbar"><div id="xpFill"></div></div>
+            <div class="meta-row sub"><span id="hudKills">0 KILLS</span><span id="hudRelicCount">0 RELICS</span></div>
+          </div>
+        </div>
+        <div class="hud-center">
+          <div class="timer" id="hudTimer">00:00</div>
+          <div class="wave" id="hudWave">WAVE 1</div>
+          <div class="bossbar hidden" id="bossBar">
+            <div class="bossmeta"><span id="bossName">HOLLOW KING</span><span id="bossHpText"></span></div>
+            <div class="bossfill" id="bossFill"></div>
+          </div>
+        </div>
+        <div class="hud-right">
+          <button class="icon-btn" id="pauseBtn" aria-label="Pause">II</button>
+          <button class="icon-btn" id="soundBtn" aria-label="Toggle sound" aria-pressed="true">♪</button>
+        </div>
+      </header>
+
+      <div class="hud-bottom">
+        <div class="vitals panel">
+          <div class="hp-head"><span>VITALITY</span><span id="hpText">100 / 100</span></div>
+          <div class="hpbar"><div id="hpFill"></div><div id="shieldFill"></div></div>
+          <div class="vitals-sub"><span id="abilityName">BLINK NOVA</span><span id="statHint">READY</span></div>
+        </div>
+        <div class="weapon-strip panel" id="weaponStrip"></div>
+        <button class="ability" id="abilityBtn" aria-label="Use ability">
+          <span class="ability-icon" id="abilityIcon">✦</span>
+          <span class="ability-cd" id="abilityCd"></span>
+        </button>
+      </div>
+
+      <div id="relicStrip" class="relic-strip"></div>
+      <div id="toastLayer" class="toast-layer"></div>
+      <div id="waveBanner" class="wave-banner" aria-live="polite"></div>
+      <div id="hint" class="hint">MOVE TO SURVIVE · ATTACKS ARE AUTOMATIC</div>
+    </div>
+
+    <div id="joystick" class="joystick" aria-hidden="true">
+      <div class="joy-ring"></div>
+      <div class="joy-knob" id="joyKnob"></div>
+    </div>
+
+    <section id="titleScreen" class="screen title-screen">
+      <div class="title-backdrop"></div>
+      <div class="title-wrap">
+        <div class="eyebrow">AN ENDLESS SURVIVAL ACTION GAME</div>
+        <h1 class="logo"><span class="logo-gloam">GLOAM</span><span class="logo-fall">FALL</span></h1>
+        <div class="logo-sub">SURVIVORS</div>
+        <p class="tagline">Outlast the dark. Hoard the light. Become impossible.</p>
+
+        <div class="char-grid" id="charGrid"></div>
+
+        <div class="title-actions">
+          <button id="playBtn" class="btn btn-primary">PLAY</button>
+          <div class="best" id="bestRun">NO RUNS YET — BE THE FIRST TO LAST</div>
+        </div>
+        <div class="title-foot">
+          <span>WASD / ARROWS · AUTO-ATTACK · SPACE ABILITY</span>
+          <span>TOUCH READY</span>
+        </div>
+      </div>
+    </section>
+
+    <section id="levelupScreen" class="screen overlay hidden">
+      <div class="overlay-card levelup-card">
+        <div class="kicker">LEVEL <span id="levelupNum">2</span></div>
+        <h2>CHOOSE AN ASCENSION</h2>
+        <p class="overlay-sub">Stack power. Break the night.</p>
+        <div class="upgrade-grid" id="upgradeGrid"></div>
+        <div class="overlay-hint">PRESS 1 · 2 · 3</div>
+      </div>
+    </section>
+
+    <section id="pauseScreen" class="screen overlay hidden">
+      <div class="overlay-card small-card">
+        <div class="kicker">PAUSED</div>
+        <h2>THE NIGHT WAITS</h2>
+        <p class="overlay-sub">Catch your breath. It will not wait long.</p>
+        <div class="pause-actions">
+          <button id="resumeBtn" class="btn btn-primary">RESUME</button>
+          <button id="quitBtn" class="btn">ABANDON RUN</button>
+        </div>
+      </div>
+    </section>
+
+    <section id="gameoverScreen" class="screen overlay hidden">
+      <div class="overlay-card gameover-card">
+        <div class="kicker" id="gameoverKicker">RUN ENDED</div>
+        <h2>YOU DIED</h2>
+        <p class="overlay-sub" id="gameoverSub">The gloam takes another.</p>
+        <div class="stats-grid" id="gameoverStats"></div>
+        <div class="loot-summary" id="lootSummary"></div>
+        <div class="gameover-actions">
+          <button id="retryBtn" class="btn btn-primary">RUN IT BACK</button>
+          <button id="changeBtn" class="btn">CHANGE SURVIVOR</button>
+        </div>
+      </div>
+    </section>
+  </div>
+
+  <script type="module" src="./src/game.js"></script>
+</body>
+</html>
