@@ -1,0 +1,53 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, viewport-fit=cover, user-scalable=no">
+  <meta name="theme-color" content="#0a0c12">
+  <title>VOIDRUNNER — Survive the swarm</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <main id="app">
+    <header class="topbar">
+      <button class="brand" id="homeButton" aria-label="Return to home"><span class="brand-mark">✦</span><span>VOID<span class="brand-light">RUNNER</span></span></button>
+      <div class="top-right"><div class="currency"><span class="coin-icon">◆</span><strong id="coinCount">0</strong><small>SHARDS</small></div><button class="icon-btn" id="soundButton" aria-label="Toggle sound">♫</button></div>
+    </header>
+
+    <section id="homeScreen" class="screen home-screen">
+      <div class="home-copy">
+        <div class="eyebrow"><span class="live-dot"></span> SECTOR 07 // ENDLESS THREAT</div>
+        <h1>ONE MORE<br><span>RUN.</span></h1>
+        <p class="lead">The swarm never sleeps. How long can you last?</p>
+        <div class="home-actions"><button class="primary-btn" id="playButton"><span>▶</span> DROP IN <span class="button-arrow">↗</span></button><button class="text-btn" id="armoryButton">✦ &nbsp; THE ARMORY</button></div>
+        <div class="best-run"><span class="best-icon">⌁</span><div><small>PERSONAL BEST</small><strong id="bestRun">00:00</strong></div><div class="best-divider"></div><div><small>BEST LEVEL</small><strong id="bestLevel">01</strong></div></div>
+      </div>
+      <div class="hero-art" aria-hidden="true"><div class="orbit orbit-a"></div><div class="orbit orbit-b"></div><div class="orbit orbit-c"></div><div class="hero-core"><div class="core-spark">✦</div></div><div class="hero-label label-a">// THREAT DETECTED</div><div class="hero-label label-b">SURVIVE THE SWARM</div><div class="hero-stats"><span><i></i> LIVE SIGNAL</span><b>∞</b><small>HOSTILES INBOUND</small></div><div class="hero-radar"></div></div>
+      <div class="home-bottom"><div class="tip"><span>⌘</span> MOVE <b>W A S D</b> <i>or</i> use the left stick</div><div class="tip"><span>✦</span> AUTO-FIRE <b>ALWAYS ON</b> <i>— focus on surviving</i></div><div class="mission-tag">ROGUE SURVIVOR PROTOCOL <span>v.07.24</span></div></div>
+    </section>
+
+    <section id="armoryScreen" class="screen armory-screen hidden">
+      <div class="section-heading"><div><div class="eyebrow">PERMANENT UPGRADES // KEEP WHAT YOU EARN</div><h2>THE <span>ARMORY</span></h2></div><button class="back-btn" id="backButton">← &nbsp; BACK</button></div>
+      <p class="armory-intro">Spend your hard-won shards on permanent enhancements. Every run starts a little stronger.</p>
+      <div id="upgradeGrid" class="upgrade-grid"></div>
+      <div class="armory-footer"><span>UPGRADES PERSIST BETWEEN RUNS</span><span>KEEP PUSHING. KEEP GROWING. <b>✦</b></span></div>
+    </section>
+
+    <section id="gameScreen" class="screen game-screen hidden">
+      <div class="game-hud"><div class="hud-left"><div class="hud-stat"><small>TIME ALIVE</small><strong id="timer">00:00</strong></div><div class="hud-stat"><small>LEVEL</small><strong id="level">01</strong></div><div class="hud-stat hide-small"><small>ELIMS</small><strong id="kills">000</strong></div></div><button class="pause-btn" id="pauseButton">Ⅱ <span>PAUSE</span></button></div>
+      <div class="game-progress"><div class="xp-label"><span>✦ XP</span><span id="xpText">0 / 10</span></div><div class="xp-track"><div id="xpFill"></div></div></div>
+      <div class="health-wrap"><span>♥</span><div class="health-track"><div id="healthFill"></div></div><strong id="healthText">100</strong></div>
+      <canvas id="gameCanvas" aria-label="Survival game arena"></canvas>
+      <div class="boss-alert hidden" id="bossAlert">⚠ ELITE DETECTED <span>TAKE IT DOWN</span></div>
+      <div id="joystick" class="joystick"><div id="joyKnob"></div></div>
+      <div class="mobile-hint">MOVE</div>
+      <div class="game-toast" id="gameToast"></div>
+      <div class="overlay hidden" id="pauseOverlay"><div class="modal-card pause-card"><div class="eyebrow">TAKE A BREATHER</div><h2>RUN <span>PAUSED</span></h2><p>The swarm can wait. Your progress is safe.</p><button class="primary-btn wide" id="resumeButton">▶ &nbsp; BACK TO IT</button><button class="text-btn" id="quitButton">END RUN & RETURN HOME</button></div></div>
+      <div class="overlay hidden" id="levelOverlay"><div class="modal-card level-card"><div class="level-kicker">LEVEL UP <span id="levelUpNumber">02</span></div><h2>CHOOSE YOUR<br><span>EDGE.</span></h2><p>A little stronger. A lot more dangerous.</p><div id="choiceCards" class="choice-cards"></div></div></div>
+      <div class="overlay hidden" id="endOverlay"><div class="modal-card end-card"><div class="eyebrow">RUN COMPLETE // DATA RECOVERED</div><h2 id="endTitle">YOU HELD<br><span>THE LINE.</span></h2><p id="endSubtitle">The swarm will be waiting next time.</p><div class="run-summary"><div><small>TIME</small><strong id="endTime">00:00</strong></div><div><small>ELIMS</small><strong id="endKills">0</strong></div><div><small>LEVEL</small><strong id="endLevel">1</strong></div><div><small>SHARDS</small><strong id="endCoins">0</strong></div></div><button class="primary-btn wide" id="retryButton">↻ &nbsp; RUN IT BACK</button><button class="text-btn" id="endHomeButton">RETURN TO HOME</button></div></div>
+    </section>
+    <footer id="footer" class="footer"><span>VOIDRUNNER</span><span>NO SAFE ZONE. JUST ONE MORE RUN.</span><span>✦</span></footer>
+  </main>
+  <script src="game.js"></script>
+</body>
+</html>
