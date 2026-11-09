@@ -6,13 +6,13 @@ export const CHARACTERS = [
     name: 'Vesper',
     epithet: 'Ember Mage',
     icon: '✦',
-    color: '#63e7ff',
-    accent: '#a78bfa',
+    color: '#d8b56a',
+    accent: '#8fbf6a',
     weapon: 'bolt',
     ability: 'blink',
     difficulty: 'BALANCED',
     blurb: 'A glass cannon who blinks through the dark and detonates it.',
-    stats: { maxHp: 100, speed: 220, damage: 1, attackSpeed: 1, area: 1, crit: 0.05, critMult: 1.7, pickup: 115, xpGain: 1, luck: 0, armor: 0, regen: 0 },
+    stats: { maxHp: 100, speed: 172, damage: 1, attackSpeed: 1, area: 1, crit: 0.05, critMult: 1.7, pickup: 115, xpGain: 1, luck: 0, armor: 0, regen: 0 },
     bars: { power: 3, speed: 3, guard: 1 }
   },
   {
@@ -20,13 +20,13 @@ export const CHARACTERS = [
     name: 'Bramble',
     epithet: 'Thorn Warden',
     icon: '❖',
-    color: '#6ee7a0',
-    accent: '#d9f99d',
+    color: '#8fbf6a',
+    accent: '#c9d39a',
     weapon: 'thorn',
     ability: 'guard',
     difficulty: 'STURDY',
     blurb: 'A living barricade. Blades orbit, thorns bite, nothing gets through.',
-    stats: { maxHp: 145, speed: 190, damage: 1.05, attackSpeed: 0.92, area: 1.05, crit: 0.03, critMult: 1.6, pickup: 125, xpGain: 1, luck: 0, armor: 3, regen: 0.3 },
+    stats: { maxHp: 145, speed: 150, damage: 1.05, attackSpeed: 0.92, area: 1.05, crit: 0.03, critMult: 1.6, pickup: 125, xpGain: 1, luck: 0, armor: 3, regen: 0.3 },
     bars: { power: 3, speed: 1, guard: 4 }
   },
   {
@@ -34,13 +34,13 @@ export const CHARACTERS = [
     name: 'Kite',
     epithet: 'Glass Scout',
     icon: '➤',
-    color: '#ffb45e',
-    accent: '#ff5d8f',
+    color: '#c98a4b',
+    accent: '#b65a3c',
     weapon: 'scatter',
     ability: 'overdrive',
     difficulty: 'FRAGILE',
     blurb: 'Fast, loud, and always one mistake from disaster. Overdrive rewards nerve.',
-    stats: { maxHp: 82, speed: 252, damage: 0.94, attackSpeed: 1.08, area: 1, crit: 0.1, critMult: 1.75, pickup: 120, xpGain: 1.05, luck: 0.06, armor: 0, regen: 0 },
+    stats: { maxHp: 82, speed: 196, damage: 0.94, attackSpeed: 1.08, area: 1, crit: 0.1, critMult: 1.75, pickup: 120, xpGain: 1.05, luck: 0.06, armor: 0, regen: 0 },
     bars: { power: 2, speed: 4, guard: 1 }
   },
   {
@@ -48,13 +48,13 @@ export const CHARACTERS = [
     name: 'Sable',
     epithet: 'Void Oracle',
     icon: '◈',
-    color: '#c77dff',
-    accent: '#63e7ff',
+    color: '#9b6bb3',
+    accent: '#8fa9a0',
     weapon: 'chain',
     ability: 'singularity',
     difficulty: 'TACTICAL',
     blurb: 'Storms follow her fingertips. Collapse the horde into a single point.',
-    stats: { maxHp: 92, speed: 205, damage: 1, attackSpeed: 1, area: 1.1, crit: 0.06, critMult: 1.8, pickup: 140, xpGain: 1.1, luck: 0.03, armor: 0, regen: 0 },
+    stats: { maxHp: 92, speed: 160, damage: 1, attackSpeed: 1, area: 1.1, crit: 0.06, critMult: 1.8, pickup: 140, xpGain: 1.1, luck: 0.03, armor: 0, regen: 0 },
     bars: { power: 4, speed: 2, guard: 2 }
   }
 ];
@@ -95,18 +95,18 @@ export const WEAPONS = {
     id: 'bolt',
     name: 'Arcane Bolt',
     icon: '✦',
-    color: '#63e7ff',
+    color: '#e0c27a',
     tier: 2,
     kind: 'projectile',
     desc: 'Seeking bolts that strike the nearest enemy.',
     levelDesc: 'Damage up. An extra bolt every 2 levels.',
-    base: { cooldown: 0.82, damage: 14, speed: 640, range: 680, radius: 6, pierce: 0, homing: 4.2 }
+    base: { cooldown: 0.82, damage: 14, speed: 540, range: 680, radius: 6, pierce: 0, homing: 4.2 }
   },
   thorn: {
     id: 'thorn',
     name: 'Thorn Orbit',
     icon: '❖',
-    color: '#6ee7a0',
+    color: '#a9bf7a',
     tier: 2,
     kind: 'orbit',
     desc: 'Living blades orbit you and shred anything they touch.',
@@ -117,18 +117,18 @@ export const WEAPONS = {
     id: 'scatter',
     name: 'Scatter Shot',
     icon: '➤',
-    color: '#ffb45e',
+    color: '#d99a5b',
     tier: 2,
     kind: 'projectile',
     desc: 'A cone of hot shards that shreds packs at close range.',
     levelDesc: 'More shards and damage, faster spread.',
-    base: { cooldown: 1.06, damage: 8, speed: 570, range: 560, radius: 4, spread: 0.5, pierce: 0 }
+    base: { cooldown: 1.06, damage: 8, speed: 480, range: 560, radius: 4, spread: 0.5, pierce: 0 }
   },
   chain: {
     id: 'chain',
     name: 'Chain Lightning',
     icon: '⌁',
-    color: '#c77dff',
+    color: '#b9a6d0',
     tier: 3,
     kind: 'chain',
     desc: 'Arcs of void lightning leap between nearby enemies.',
@@ -139,18 +139,18 @@ export const WEAPONS = {
     id: 'boomerang',
     name: 'Moon Chakram',
     icon: '☾',
-    color: '#7dd3fc',
+    color: '#b8b09a',
     tier: 3,
     kind: 'boomerang',
     desc: 'A spinning crescent that tears out and returns.',
     levelDesc: 'Extra chakrams, more damage, faster return.',
-    base: { cooldown: 1.45, damage: 15, speed: 530, range: 500, radius: 12 }
+    base: { cooldown: 1.45, damage: 15, speed: 450, range: 500, radius: 12 }
   },
   flame: {
     id: 'flame',
     name: 'Ember Aura',
     icon: '✹',
-    color: '#ff8a5b',
+    color: '#c9743f',
     tier: 3,
     kind: 'aura',
     desc: 'A ring of cinders burns everything close to you.',
@@ -229,10 +229,10 @@ export const PASSIVES = [
 ];
 
 export const RELIC_RARITIES = {
-  common: { name: 'COMMON', color: '#b9c4d8', glow: 'rgba(185,196,216,.65)', weight: 60, tier: 1 },
-  rare: { name: 'RARE', color: '#55b9ff', glow: 'rgba(85,185,255,.8)', weight: 26, tier: 2 },
-  epic: { name: 'EPIC', color: '#c77dff', glow: 'rgba(199,125,255,.9)', weight: 10, tier: 3 },
-  legendary: { name: 'LEGENDARY', color: '#ffc857', glow: 'rgba(255,200,87,.95)', weight: 3.2, tier: 4 }
+  common: { name: 'COMMON', color: '#b9b09a', glow: 'rgba(185,176,154,.5)', weight: 60, tier: 1 },
+  rare: { name: 'RARE', color: '#6f9f8a', glow: 'rgba(111,159,138,.65)', weight: 26, tier: 2 },
+  epic: { name: 'EPIC', color: '#9b6bb3', glow: 'rgba(155,107,179,.75)', weight: 10, tier: 3 },
+  legendary: { name: 'LEGENDARY', color: '#d8a84e', glow: 'rgba(216,168,78,.85)', weight: 3.2, tier: 4 }
 };
 
 export const RELICS = {
@@ -279,12 +279,12 @@ export const RELICS = {
 };
 
 export const ENEMIES = {
-  grunt: { id: 'grunt', name: 'Husk', hp: 15, speed: 74, radius: 14, damage: 9, xp: 1, color: '#ff5d73', accent: '#ffb3c0', tier: 1 },
-  runner: { id: 'runner', name: 'Skitter', hp: 10, speed: 132, radius: 10, damage: 6, xp: 1, color: '#ff9f43', accent: '#ffe0a3', tier: 1 },
-  tank: { id: 'tank', name: 'Golem', hp: 72, speed: 46, radius: 22, damage: 16, xp: 3, color: '#7f8ca8', accent: '#d4def0', tier: 2 },
-  shooter: { id: 'shooter', name: 'Wisp', hp: 26, speed: 62, radius: 14, damage: 8, xp: 2, color: '#c77dff', accent: '#edd6ff', tier: 2, ranged: true },
-  splitter: { id: 'splitter', name: 'Maw', hp: 38, speed: 68, radius: 17, damage: 10, xp: 2, color: '#6ee7a8', accent: '#c9ffe4', tier: 2, split: true },
-  boss: { id: 'boss', name: 'Hollow King', hp: 1450, speed: 44, radius: 46, damage: 26, xp: 70, color: '#ffc857', accent: '#fff1b8', tier: 4, boss: true }
+  grunt: { id: 'grunt', name: 'Husk', hp: 15, speed: 52, radius: 14, damage: 9, xp: 0.7, color: '#6b5a3f', accent: '#b8a071', tier: 1 },
+  runner: { id: 'runner', name: 'Skitter', hp: 10, speed: 92, radius: 10, damage: 6, xp: 0.6, color: '#8a5a2b', accent: '#d1a15d', tier: 1 },
+  tank: { id: 'tank', name: 'Golem', hp: 72, speed: 33, radius: 22, damage: 16, xp: 4, color: '#5d5f58', accent: '#a8a58f', tier: 2 },
+  shooter: { id: 'shooter', name: 'Wisp', hp: 26, speed: 44, radius: 14, damage: 8, xp: 2.5, color: '#6e4a5a', accent: '#c08a9a', tier: 2, ranged: true },
+  splitter: { id: 'splitter', name: 'Maw', hp: 38, speed: 48, radius: 17, damage: 10, xp: 3, color: '#4f6b45', accent: '#9bbf7e', tier: 2, split: true },
+  boss: { id: 'boss', name: 'Hollow King', hp: 1450, speed: 32, radius: 46, damage: 26, xp: 90, color: '#6d5b45', accent: '#d8b56a', tier: 4, boss: true }
 };
 
 export const BOSS_NAMES = ['THE HOLLOW KING', 'MOTHER OF MOTHS', 'THE GILDED WORM', 'SAINT OF ASH', 'THE LAST CHOIR'];
