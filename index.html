@@ -1,0 +1,73 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+  <meta name="theme-color" content="#101611">
+  <link rel="icon" href="data:,">
+  <title>Gloamward — The Long Night</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=DM+Sans:wght@400;500;600;700;800&family=Unbounded:wght@500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <main id="game-shell">
+    <canvas id="game" aria-label="Gloamward action game"></canvas>
+    <div class="vignette"></div>
+    <header id="hud" class="hud hidden">
+      <div class="hud-top">
+        <div class="brand-mark"><span class="brand-icon">✳</span><span>GLOAMWARD</span><small>THE LONG NIGHT</small></div>
+        <div class="run-stats"><span id="wave-label">NIGHT 01</span><b id="timer">00:00</b><span id="kill-label">0 FALLEN</span></div>
+        <button id="pause-btn" class="icon-btn" aria-label="Pause">Ⅱ</button>
+      </div>
+      <div class="bars">
+        <div class="bar-row hp-row"><span class="bar-icon">♥</span><div class="bar-track"><div id="hp-fill" class="bar-fill hp-fill"></div></div><span id="hp-text">100 / 100</span></div>
+        <div class="bar-row xp-row"><span class="bar-icon">✦</span><div class="bar-track"><div id="xp-fill" class="bar-fill xp-fill"></div></div><span id="level-text">LV 1</span></div>
+      </div>
+      <div class="coin-counter"><span>✧</span><span id="run-coins">0</span><small>SHARDS</small></div>
+    </header>
+    <section id="overlay" class="overlay">
+      <div id="title-screen" class="screen title-screen">
+        <div class="eyebrow"><i></i> A SURVIVOR-LIKE FOR THE STUBBORN <i></i></div>
+        <h1>THE NIGHT<br><em>IS LONG.</em></h1>
+        <p class="title-copy">The Gloam has swallowed the valley.<br>How far will you carry its light?</p>
+        <div class="title-divider"><span>✳</span></div>
+        <button id="start-btn" class="primary-btn"><span>ENTER THE GLOAM</span><b>↗</b></button>
+        <div class="title-foot"><span>WASD / ARROWS TO MOVE</span><span>✦</span><span>YOUR WEAPONS FIGHT FOR YOU</span></div>
+        <div class="meta-ribbon"><span>✧ <b id="bank-shards">0</b> BANKED SHARDS</span><span>BEST <b id="best-time">—</b></span></div>
+        <button id="armory-open" class="text-btn">THE CAMP · PERMANENT UPGRADES <span>→</span></button>
+      </div>
+      <div id="level-screen" class="screen level-screen hidden">
+        <div class="eyebrow"><i></i> A MOMENT OF CLARITY <i></i></div>
+        <h2>CHOOSE YOUR<br><em>EDGE.</em></h2>
+        <p class="subcopy">The Gloam waits. Choose one.</p>
+        <div id="upgrade-cards" class="upgrade-cards"></div>
+      </div>
+      <div id="pause-screen" class="screen pause-screen hidden">
+        <div class="eyebrow"><i></i> THE GLOAM HOLDS ITS BREATH <i></i></div><h2>NIGHT<br><em>PAUSED.</em></h2>
+        <button id="resume-btn" class="primary-btn"><span>BACK TO THE FIGHT</span><b>↗</b></button><button id="quit-btn" class="text-btn">ABANDON THIS RUN <span>→</span></button>
+      </div>
+      <div id="end-screen" class="screen end-screen hidden">
+        <div class="eyebrow"><i></i> THE DAWN FINDS YOU <i></i></div><h2 id="end-title">YOU HELD<br><em>THE LINE.</em></h2>
+        <p id="end-copy" class="subcopy">The valley remembers.</p>
+        <div class="run-recap"><div><b id="end-time">00:00</b><small>TIME HELD</small></div><div><b id="end-kills">0</b><small>FALLEN</small></div><div><b id="end-shards">0</b><small>SHARDS FOUND</small></div></div>
+        <button id="again-btn" class="primary-btn"><span>RETURN TO THE CAMP</span><b>↗</b></button>
+      </div>
+      <div id="armory-screen" class="screen armory-screen hidden">
+        <div class="eyebrow"><i></i> WHAT THE DEAD LEAVE BEHIND <i></i></div><h2>THE<br><em>CAMP.</em></h2>
+        <p class="subcopy">Spend banked shards. These blessings last.</p>
+        <div id="armory-list" class="armory-list"></div>
+        <button id="armory-back" class="text-btn">← BACK TO THE VALLEY</button>
+      </div>
+    </section>
+    <div id="mobile-controls" class="mobile-controls hidden">
+      <div id="joystick" class="joystick"><div class="joy-ring"></div><div id="joy-knob" class="joy-knob"></div></div>
+      <button id="dash-btn" class="dash-btn"><span>↯</span><small>DASH</small></button>
+    </div>
+    <div id="toast" class="toast"></div>
+    <div id="boss-hud" class="boss-hud hidden"><span>THE HOLLOW WARDEN</span><div class="boss-track"><i id="boss-fill"></i></div></div>
+  </main>
+  <script src="game.js"></script>
+</body>
+</html>
