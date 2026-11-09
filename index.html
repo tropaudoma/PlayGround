@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover" />
+  <meta name="theme-color" content="#1c2417" />
+  <meta name="description" content="Boar: The Truffle Hunter — a 3D forest adventure RPG. Hunt truffles, fight packs, and become the strongest boar in the forest." />
+  <title>Boar — The Truffle Hunter</title>
+  <link rel="stylesheet" href="./css/style.css" />
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%23202b19'/%3E%3Cpath d='M16 38c0-10 7-18 17-18 8 0 14 5 14 12 0 5-3 9-8 10l-2 6h-7l-1-5c-4-1-7-2-9-5z' fill='%23c7a06a'/%3E%3Cpath d='M24 34c2 3 5 4 8 4' stroke='%23202b19' stroke-width='2' fill='none'/%3E%3Cpath d='M45 31c4 1 6 4 5 8l-5-1z' fill='%23f0e0b7'/%3E%3Ccircle cx='40' cy='29' r='1.5' fill='%23140f0a'/%3E%3C/svg%3E" />
+</head>
+<body>
+  <div id="app">
+    <canvas id="game-canvas"></canvas>
+    <div id="grade"></div>
+    <div id="vignette"></div>
+    <div id="grain"></div>
+
+    <div id="loading" class="overlay">
+      <div class="loading-mark">
+        <svg viewBox="0 0 64 64" class="boar-mark"><path d="M12 40c0-12 9-21 21-21 9 0 16 5 16 13 0 6-4 10-10 11l-2 7h-8l-1-6c-5-1-9-2-12-6z" fill="currentColor"/><path d="M47 32c5 1 8 5 6 10l-6-1z" fill="#f1e3bd"/><circle cx="42" cy="30" r="2" fill="#1a140d"/><path d="M25 37c3 3 7 4 11 3" stroke="#1a140d" stroke-width="2.2" fill="none" stroke-linecap="round"/><path d="M14 34c-4-1-7-5-6-9" stroke="currentColor" stroke-width="3" fill="none" stroke-linecap="round"/></svg>
+        <span>BOAR</span>
+      </div>
+      <p>Waking the forest…</p>
+      <div class="loading-bar"><i></i></div>
+    </div>
+
+    <section id="title-screen" class="overlay hidden">
+      <div class="title-leaves" aria-hidden="true"></div>
+      <div class="title-inner">
+        <div class="eyebrow"><span></span> A FOREST ADVENTURE <span></span></div>
+        <h1 class="game-logo">BOAR</h1>
+        <div class="logo-rule"><i></i><em>THE TRUFFLE HUNTER</em><i></i></div>
+        <p class="tagline">Root out legendary truffles. Outsmart the packs.<br/>Become the strongest boar in the forest.</p>
+        <div class="title-actions">
+          <button id="start-btn" class="btn btn-primary" type="button">
+            <span class="btn-shine"></span>
+            Start
+          </button>
+          <button id="continue-btn" class="btn btn-ghost hidden" type="button">Continue Journey</button>
+        </div>
+        <div class="title-features">
+          <div><b>6</b><span>wild regions</span></div>
+          <div><b>5</b><span>truffle kinds</span></div>
+          <div><b>30+</b><span>skills &amp; arts</span></div>
+          <div><b>∞</b><span>forest stories</span></div>
+        </div>
+        <div class="title-foot">
+          <p><kbd>WASD</kbd> move <span>·</span> <kbd>X</kbd> sniff <span>·</span> <kbd>V</kbd> dig <span>·</span> <kbd>J</kbd> strike <span>·</span> <kbd>K</kbd> charge</p>
+          <p class="tiny">Best played with sound. Progress saves to this browser.</p>
+        </div>
+      </div>
+      <div class="title-corner tl"></div><div class="title-corner tr"></div>
+      <div class="title-corner bl"></div><div class="title-corner br"></div>
+    </section>
+
+    <section id="hud" class="hidden">
+      <div class="hud-top">
+        <div class="stat-panel glass">
+          <div class="level-badge"><span id="level-num">1</span><small>LVL</small></div>
+          <div class="stat-main">
+            <div class="stat-head"><b id="player-title">Young Boar</b><span id="region-chip">Mosswood Glade</span></div>
+            <div class="bar health"><i id="health-fill"></i><span id="health-text">100 / 100</span></div>
+            <div class="bar stamina"><i id="stamina-fill"></i><span id="stamina-text">100 / 100</span></div>
+            <div class="bar rage"><i id="rage-fill"></i><span id="rage-text">0 / 100</span></div>
+            <div class="xp-line"><i id="xp-fill"></i><span id="xp-text">0 / 100 XP</span></div>
+          </div>
+        </div>
+
+        <div class="center-top">
+          <div class="clock glass"><span id="clock-icon">☀</span><span id="clock-text">16:20</span><small id="day-text">Day 1</small></div>
+          <div id="boss-wrap" class="hidden">
+            <div class="boss-name"><span id="boss-title">OLD GNARL</span><small>LEGENDARY BEAR</small></div>
+            <div class="boss-bar"><i id="boss-fill"></i></div>
+          </div>
+        </div>
+
+        <div class="resource-panel glass">
+          <div class="res" title="Coins"><span class="res-ico coin">◉</span><b id="coins">0</b></div>
+          <div class="res" title="Truffles found"><span class="res-ico truffle">✦</span><b id="truffle-count">0</b></div>
+          <div class="res" title="Wild berries"><span class="res-ico berry">●</span><b id="berry-count">0</b></div>
+          <button id="pause-btn" class="icon-btn" type="button" aria-label="Open the den">☰</button>
+        </div>
+      </div>
+
+      <div id="quest-tracker" class="glass">
+        <div class="tracker-title"><span>FOREST TASKS</span><button id="tracker-toggle" aria-label="Toggle quest tracker">–</button></div>
+        <div id="quest-list"></div>
+      </div>
+
+      <div id="minimap-wrap" class="glass">
+        <canvas id="minimap" width="320" height="320"></canvas>
+        <div class="map-ring"></div>
+        <div class="compass n">N</div>
+        <div id="scent-badge" class="scent-badge"><span>◌</span> Scent</div>
+      </div>
+
+      <div id="region-popup" class="hidden">
+        <small>ENTERING</small>
+        <b id="region-popup-name">Mosswood Glade</b>
+        <span id="region-popup-desc">A soft green clearing.</span>
+      </div>
+
+      <div id="toasts"></div>
+      <div id="damage-layer"></div>
+
+      <div id="interaction" class="hidden">
+        <span class="interact-key">V</span>
+        <span id="interaction-text">Hold to dig</span>
+        <div class="dig-meter hidden" id="dig-meter"><i id="dig-fill"></i></div>
+      </div>
+
+      <div id="ability-hint" class="hidden"></div>
+
+      <div id="hotbar">
+        <button class="slot" data-ability="attack" type="button"><span class="key">J</span><span class="ico"></span><small>Strike</small></button>
+        <button class="slot" data-ability="charge" type="button"><span class="key">K</span><span class="ico"></span><small>Charge</small></button>
+        <button class="slot" data-ability="sniff" type="button"><span class="key">X</span><span class="ico"></span><small>Sniff</small></button>
+        <button class="slot" data-ability="dig" type="button"><span class="key">V</span><span class="ico"></span><small>Dig</small></button>
+        <button class="slot locked" data-ability="stomp" type="button"><span class="key">Q</span><span class="ico"></span><small>Stomp</small><span class="lock">⌑</span></button>
+        <button class="slot locked" data-ability="guard" type="button"><span class="key">E</span><span class="ico"></span><small>Guard</small><span class="lock">⌑</span></button>
+        <button class="slot locked" data-ability="rush" type="button"><span class="key">R</span><span class="ico"></span><small>Rush</small><span class="lock">⌑</span></button>
+        <button class="slot locked" data-ability="rage" type="button"><span class="key">F</span><span class="ico"></span><small>Rage</small><span class="lock">⌑</span></button>
+      </div>
+
+      <div id="hint-bar" class="glass">
+        <span id="hint-text">Press <kbd>X</kbd> to sniff the air.</span>
+      </div>
+
+      <div id="reticle"></div>
+    </section>
+
+    <section id="pause-screen" class="overlay hidden">
+      <div class="pause-inner">
+        <header class="pause-head">
+          <div class="pause-title">
+            <small>REST A MOMENT</small>
+            <h2>The Den</h2>
+          </div>
+          <div class="pause-res">
+            <span>◉ <b id="pause-coins">0</b></span>
+            <span>✦ <b id="pause-truffles">0</b></span>
+            <span>LV <b id="pause-level">1</b></span>
+          </div>
+          <button id="resume-btn" class="btn btn-small" type="button">Resume</button>
+        </header>
+        <nav class="tabs" id="menu-tabs">
+          <button data-tab="boar" class="active" type="button">Boar</button>
+          <button data-tab="skills" type="button">Skills <i id="skill-dot" class="dot hidden"></i></button>
+          <button data-tab="quests" type="button">Quests</button>
+          <button data-tab="journal" type="button">Journal</button>
+          <button data-tab="trophies" type="button">Trophies</button>
+          <button data-tab="map" type="button">Map</button>
+          <button data-tab="settings" type="button">Settings</button>
+        </nav>
+        <div id="menu-content" class="menu-content"></div>
+        <footer class="pause-foot">
+          <span><kbd>Esc</kbd> resume</span>
+          <span>Autosaved <i id="save-dot"></i></span>
+        </footer>
+      </div>
+    </section>
+
+    <section id="death-screen" class="overlay hidden">
+      <div class="death-card">
+        <small>THE FOREST IS PATIENT</small>
+        <h2>You Are Overwhelmed</h2>
+        <p>The roots will carry you home. You lose a little coin, but not your spirit.</p>
+        <button id="respawn-btn" class="btn btn-primary" type="button">Return to the Den</button>
+      </div>
+    </section>
+
+    <div id="touch-controls" class="hidden">
+      <div id="joystick" class="joystick"><div id="joystick-knob"></div></div>
+      <div class="touch-actions">
+        <button data-touch="stomp" class="tbtn locked" type="button"><span>Q</span></button>
+        <button data-touch="guard" class="tbtn locked" type="button"><span>E</span></button>
+        <button data-touch="rush" class="tbtn locked" type="button"><span>R</span></button>
+        <button data-touch="rage" class="tbtn locked" type="button"><span>F</span></button>
+        <button data-touch="dig" class="tbtn" type="button"><span>V</span></button>
+        <button data-touch="sniff" class="tbtn" type="button"><span>X</span></button>
+        <button data-touch="charge" class="tbtn big" type="button"><span>K</span></button>
+        <button data-touch="attack" class="tbtn biggest" type="button"><span>J</span></button>
+        <button data-touch="jump" class="tbtn" type="button"><span>⤒</span></button>
+      </div>
+      <button id="touch-pause" class="tbtn" type="button"><span>☰</span></button>
+    </div>
+
+    <div id="intro-cinematic" class="hidden">
+      <div class="intro-line"><small>THE VALLEY OF MOSS AND GOLD</small><p>The forest has kept its treasures buried for a hundred years.<br/>Today, a boar with a remarkable nose goes looking.</p></div>
+    </div>
+  </div>
+
+  <script type="module" src="./js/main.js"></script>
+</body>
+</html>
