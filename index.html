@@ -12,7 +12,7 @@
   <main class="game-shell">
     <header class="topbar">
       <a class="brand" href="#" aria-label="Graffiti Merge"><span class="brand-mark">GM</span><span><b>ГРАФФИТИ</b><small>УЛИЧНАЯ ИМПЕРИЯ</small></span></a>
-      <div class="top-meta"><div class="coin-pill"><span class="coin-icon">¢</span><strong id="coins">0</strong><small>МОНЕТЫ</small></div><button class="lang-button" id="language" aria-label="Сменить язык">RU <span>⌄</span></button></div>
+      <div class="top-meta"><div class="coin-pill"><span class="coin-icon">¢</span><strong id="coins">0</strong><small id="coins-label">МОНЕТЫ</small></div><button class="upgrade-open" id="open-upgrades" type="button">✦ <span id="upgrade-button-label">УЛУЧШЕНИЯ</span></button><button class="lang-button" id="language" aria-label="Сменить язык">RU <span>⌄</span></button></div>
     </header>
 
     <section class="workshop-card">
@@ -34,12 +34,17 @@
       </section>
 
       <aside class="side-column">
-        <section class="panel upgrade-panel"><div class="section-head"><div><span class="eyebrow">РАСТИ И ПРОЦВЕТАЙ</span><h2 id="upgrade-title">Мастерская</h2></div><span class="upgrade-spark">✦</span></div><div id="upgrades" class="upgrade-list"></div></section>
         <section class="panel goals-panel"><div class="section-head"><div><span class="eyebrow">СЛЕДУЮЩАЯ ЦЕЛЬ</span><h2 id="goal-title">Новая стена</h2></div><span class="goal-icon">▤</span></div><div class="goal-progress"><div class="goal-track"><i id="goal-progress"></i></div><span id="goal-percent">0%</span></div><div class="goal-copy"><b id="goal-main">Улучши стену до 3 уровня</b><small id="goal-sub">Откроется станция под мостом</small></div></section>
         <section class="panel collection-panel"><div class="collection-head"><div><span class="eyebrow" id="collection-eyebrow">ТВОЯ КОЛЛЕКЦИЯ</span><h2 id="collection-title">Инструменты</h2></div><span class="collection-count" id="collection-count">1 / 6</span></div><div class="collection-items" id="collection-items"></div></section>
       </aside>
     </div>
     <footer><span>✦ <b>ТВОЙ ДВОР — ТВОИ ПРАВИЛА</b></span><span id="save-status">Игра сохраняется автоматически</span></footer>
+    <section class="upgrade-overlay" id="upgrade-overlay" aria-hidden="true">
+      <div class="upgrade-window" role="dialog" aria-modal="true" aria-labelledby="upgrade-title">
+        <div class="upgrade-window-head"><div><span class="eyebrow" id="upgrade-kicker">РАСТИ И ПРОЦВЕТАЙ</span><h2 id="upgrade-title">Мастерская</h2></div><button class="upgrade-close" id="close-upgrades" type="button" aria-label="Закрыть">×</button></div>
+        <div id="upgrades" class="upgrade-list"></div>
+      </div>
+    </section>
     <div class="toast" id="toast" role="status"></div>
   </main>
   <script src="game.js"></script>
