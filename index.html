@@ -1,0 +1,47 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" />
+  <meta name="theme-color" content="#242722" />
+  <link rel="icon" href="favicon.svg" type="image/svg+xml" />
+  <title>Граффити-мастерская — Уличная империя</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <main class="game-shell">
+    <header class="topbar">
+      <a class="brand" href="#" aria-label="Graffiti Merge"><span class="brand-mark">GM</span><span><b>ГРАФФИТИ</b><small>УЛИЧНАЯ ИМПЕРИЯ</small></span></a>
+      <div class="top-meta"><div class="coin-pill"><span class="coin-icon">¢</span><strong id="coins">0</strong><small>МОНЕТЫ</small></div><button class="lang-button" id="language" aria-label="Сменить язык">RU <span>⌄</span></button></div>
+    </header>
+
+    <section class="workshop-card">
+      <div class="scene-heading"><div><span class="eyebrow" id="loc-eyebrow">РАЙОН №01 · УРОВЕНЬ 1</span><h1 id="location-name">Старый двор</h1></div><div class="wall-badge"><span>▧</span> <b id="wall-label">СТЕНА 1</b></div></div>
+      <div class="scene-wrap">
+        <canvas id="scene" aria-label="Художники рисуют граффити на кирпичной стене"></canvas>
+        <div class="scene-caption"><span class="live-dot"></span><span id="scene-status">МАСТЕРА ЗА РАБОТОЙ</span><span class="scene-level" id="scene-level">✦ 1</span></div>
+      </div>
+      <div class="artist-strip"><div class="artist-summary"><span class="artist-icon">♟</span><b><span id="artist-count">1</span> <span id="artist-word">художник</span></b><small id="artist-subtitle">Работают над новыми шедеврами</small></div><div class="earnings"><span>ЗА РИСУНОК</span><b>+<span id="earn-range">8–16</span> <i>¢</i></b></div></div>
+    </section>
+
+    <div class="content-grid">
+      <section class="board-card panel">
+        <div class="section-head"><div><span class="eyebrow">СОБИРАЙ И ОБЪЕДИНЯЙ</span><h2 id="board-title">Стол с красками</h2></div><div class="board-capacity"><b id="occupied">0</b><span>/</span><span id="capacity">16</span><span class="capacity-icon">▦</span></div></div>
+        <p class="hint" id="board-hint">Перетащи одинаковые предметы друг на друга — или коснись двух по очереди.</p>
+        <div class="board-frame"><div class="merge-board" id="board" role="grid" aria-label="Поле объединения"></div></div>
+        <div class="spawn-row"><span class="spawn-icon">✳</span><div class="spawn-copy"><b id="spawn-label">Новые материалы</b><small id="spawn-in">Следующая поставка через 24 сек.</small></div><div class="spawn-meter"><i id="spawn-progress"></i></div></div>
+        <div class="item-legend" id="item-legend"></div>
+      </section>
+
+      <aside class="side-column">
+        <section class="panel upgrade-panel"><div class="section-head"><div><span class="eyebrow">РАСТИ И ПРОЦВЕТАЙ</span><h2 id="upgrade-title">Мастерская</h2></div><span class="upgrade-spark">✦</span></div><div id="upgrades" class="upgrade-list"></div></section>
+        <section class="panel goals-panel"><div class="section-head"><div><span class="eyebrow">СЛЕДУЮЩАЯ ЦЕЛЬ</span><h2 id="goal-title">Новая стена</h2></div><span class="goal-icon">▤</span></div><div class="goal-progress"><div class="goal-track"><i id="goal-progress"></i></div><span id="goal-percent">0%</span></div><div class="goal-copy"><b id="goal-main">Улучши стену до 3 уровня</b><small id="goal-sub">Откроется станция под мостом</small></div></section>
+        <section class="panel collection-panel"><div class="collection-head"><div><span class="eyebrow" id="collection-eyebrow">ТВОЯ КОЛЛЕКЦИЯ</span><h2 id="collection-title">Инструменты</h2></div><span class="collection-count" id="collection-count">1 / 6</span></div><div class="collection-items" id="collection-items"></div></section>
+      </aside>
+    </div>
+    <footer><span>✦ <b>ТВОЙ ДВОР — ТВОИ ПРАВИЛА</b></span><span id="save-status">Игра сохраняется автоматически</span></footer>
+    <div class="toast" id="toast" role="status"></div>
+  </main>
+  <script src="game.js"></script>
+</body>
+</html>
