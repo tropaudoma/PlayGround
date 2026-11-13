@@ -1,97 +1,266 @@
 (() => {
   'use strict';
   const $ = id => document.getElementById(id);
-  const toolNames = ['Карандаш','Скетч-маркер','Краска-маркер','Баллончик','Профи-спрей','Арт-кейс'];
-  const toolIcons = Array.from({length:6},(_,i)=>`assets/pixel/tool-${i+1}.png`);
-  const toolColors = ['#d58c45','#50879a','#d06450','#7b9b57','#d0a741','#a56b9a'];
-  const pixelAssets = {alley:new Image(),sprites:new Image()};
-  pixelAssets.alley.src='assets/pixel/alley.png';
-  pixelAssets.sprites.src='assets/pixel/sprites.png';
-  const translations = {
-    ru:{loc:'РАЙОН №01 · УРОВЕНЬ',old:'Старый двор',under:'Станция под мостом',rooftop:'Крыши центра',wall:'СТЕНА',artists:['художник','художника','художников'],active:'Работают над новыми шедеврами',working:'МАСТЕРА ЗА РАБОТОЙ',idle:'ЖДУТ МАТЕРИАЛЫ',board:'Стол с красками',hint:'Объединяй одинаковые инструменты, затем перетащи готовый предмет на свободного художника.',spawn:'Новые материалы',delivery:'Следующая поставка через',supplies:'Материалы улучшены',upTitle:'Мастерская',goal:'Новая стена',goalMain:'Улучши стену до 3 уровня',goalSub:'Откроется станция под мостом',collection:'Инструменты',collectionEyebrow:'ТВОЯ КОЛЛЕКЦИЯ',auto:'Игра сохраняется автоматически',saved:'Сохранено',bought:'Улучшение приобретено!',poor:'Пока не хватает монет',full:'Нет места — объедини предметы или расширь стол',merge:'Отлично! Инструмент улучшен',hire:'Новый художник присоединился!',artistUp:'Художники стали проворнее',spawnUp:'Поставки материалов ускорены',boardUp:'Стол расширен — +4 ячейки',wallUp:'Стена стала больше и ценнее',location:'Новая локация открыта!',locked:'Сначала улучши стену до 3 уровня',next:'Новый двор',nextSub:'Откроется район на крышах',max:'МАКС.',buy:'УЛУЧШИТЬ',hireBtn:'НАНЯТЬ',artistsLabel:'ХУДОЖНИКИ',speedLabel:'СКОРОСТЬ РАБОТЫ',supplyLabel:'ПОСТАВКИ',boardLabel:'МЕСТО НА СТОЛЕ',wallLabel:'ГРАФФИТИ-СТЕНА',upDescHire:'Ещё один мастер для стены',upDescEff:'Художники рисуют быстрее',upDescSupply:'Чаще появляются карандаши',upDescBoard:'Дополнительный ряд инструментов',upDescWall:'Новая стена и больше места для рисунков',collected:'УЖЕ НАЙДЕН',need:'НУЖНО',artist:'Мастер',combo:'Серия слияний',painting:'Рисует',coins:'МОНЕТЫ',assignHint:'Перетащи инструмент художнику',slotReady:'ЖДЁТ ИНСТРУМЕНТ',slotWalk:'ИДЁТ К СТЕНЕ',slotPaint:'РИСУЕТ',slotReturn:'ВОЗВРАЩАЕТСЯ',jobDone:'завершил рисунок',rejected:'Этот мастер пока занят',reward:'Награда',artistShort:'Мастер',progressLabel:'ХОД РАБОТЫ',stageStarting:'НАЧАЛО',stageSketching:'ЭСКИЗ',stageColoring:'ЗАЛИВКА',stageOutlining:'ОБВОДКА',stageCompleted:'ГОТОВО'},
-    en:{loc:'DISTRICT 01 · LEVEL',old:'Old Courtyard',under:'Underpass Studio',rooftop:'Rooftop District',wall:'WALL',artists:['artist','artists','artists'],active:'Making new masterpieces',working:'ARTISTS AT WORK',idle:'WAITING FOR SUPPLIES',board:'Paint Table',hint:'Merge matching tools, then drag a finished tool onto a free artist.',spawn:'Fresh supplies',delivery:'Next delivery in',supplies:'Supplies improved',upTitle:'Workshop',goal:'Next wall',goalMain:'Upgrade the wall to level 3',goalSub:'Unlock the underpass studio',collection:'Tools',collectionEyebrow:'YOUR COLLECTION',auto:'Game saves automatically',saved:'Saved',bought:'Upgrade purchased!',poor:'Not enough coins yet',full:'Board is full — merge tools or expand the table',merge:'Nice! Tool upgraded',hire:'A new artist joined the crew!',artistUp:'Artists are working faster',spawnUp:'Supplies arrive faster',boardUp:'Table expanded — +4 slots',wallUp:'Wall expanded and rewards increased',location:'New location unlocked!',locked:'Upgrade the wall to level 3 first',next:'Next neighborhood',nextSub:'Unlock the rooftop district',max:'MAX',buy:'UPGRADE',hireBtn:'HIRE',artistsLabel:'ARTISTS',speedLabel:'WORK SPEED',supplyLabel:'SUPPLIES',boardLabel:'TABLE SPACE',wallLabel:'GRAFFITI WALL',upDescHire:'Another artist for the wall',upDescEff:'Artists finish their art faster',upDescSupply:'Pencils arrive more often',upDescBoard:'An extra row of tools',upDescWall:'A fresh wall with more room for art',collected:'DISCOVERED',need:'NEED',artist:'Artist',combo:'Merge streak',painting:'Painting',coins:'COINS',assignHint:'Drag a tool onto an artist',slotReady:'NEEDS A TOOL',slotWalk:'WALKING TO WALL',slotPaint:'PAINTING',slotReturn:'RETURNING',jobDone:'finished a piece',rejected:'This artist is busy',reward:'Reward',artistShort:'Artist',progressLabel:'ART PROGRESS',stageStarting:'STARTING',stageSketching:'SKETCHING',stageColoring:'COLORING',stageOutlining:'OUTLINING',stageCompleted:'COMPLETED'}
+  const SAVE_KEY = 'graffiti-workshop-v2';
+  const MAX_TOOLS = 12;
+  const MAX_ARTISTS = 6;
+  const REWARD = 15;
+  const toolNames = { ru: ['Карандаш', 'Скетч-маркер', 'Краска-маркер', 'Баллончик', 'Профи-спрей', 'Арт-кейс'], en: ['Pencil', 'Sketch marker', 'Paint marker', 'Spray can', 'Pro spray', 'Art case'] };
+  const toolColors = ['#d58c45', '#50879a', '#d06450', '#7b9b57', '#d0a741', '#a56b9a'];
+  const pixelAssets = { alley: new Image(), sprites: new Image() };
+  pixelAssets.alley.src = 'assets/pixel/alley.png';
+  pixelAssets.sprites.src = 'assets/pixel/sprites.png';
+  pixelAssets.alley.onload = () => renderCanvas();
+  const muralColors = ['#f26e4f', '#e7c84e', '#53b9b3', '#d375b0', '#e8e4d4', '#78a9e3'];
+  const names = { ru: ['Лиса', 'Шум', 'Клякс', 'Рэй', 'Искра', 'Мико'], en: ['Fox', 'Noise', 'Splat', 'Ray', 'Spark', 'Miko'] };
+  const words = { ru: ['ЖАР', 'ШУМ', 'МИР', 'БИТ', 'СЛЕД', 'ИСКРА', 'ДВОР', 'РИТМ', 'ВОЛЯ', 'СВЕТ', 'КОТ', 'ДРАЙВ'], en: ['HEAT', 'NOISE', 'PEACE', 'BEAT', 'TRACE', 'SPARK', 'YARD', 'RHYTHM', 'SOUL', 'GLOW', 'CREW', 'VIBE'] };
+  const tr = {
+    ru: { district: 'РАБОЧАЯ ЗОНА ·', place: 'Старая промзона', wall: 'СТЕНА', coins: 'МОНЕТЫ', upgrades: 'УЛУЧШЕНИЯ', crewKick: 'ТВОЯ КОМАНДА', crew: 'Мастера', crewNote: 'Выбери инструмент, затем мастера, чтобы начать рисунок.', master: 'МАСТЕР', masters: 'МАСТЕРА', supplies: 'Краски и инструменты', inventory: 'ИНВЕНТАРЬ', merge: 'Выбери два одинаковых инструмента, чтобы объединить их.', tip: 'Выбери инструмент и назначь мастера на стену.', alive: 'СТЕНА ОЖИВАЕТ', painting: 'МАСТЕРА РИСУЮТ', idle: 'ЖДУТ МАТЕРИАЛЫ', waiting: 'СВОБОДЕН', busy: 'РИСУЕТ', finished: 'ГОТОВО', supply: 'НОВАЯ ПОСТАВКА', in: 'через', seconds: 'сек.', save: 'АВТОСОХРАНЕНИЕ ВКЛЮЧЕНО', saved: 'СОХРАНЕНО', hire: 'Расширить команду', hireDescription: 'Нанять ещё одного мастера', reward: 'НАГРАДА', each: 'ЗА РИСУНОК', upgradesTitle: 'Улучшения', kicker: 'РАЗВИВАЙ МАСТЕРСКУЮ', foot: 'Каждый готовый мурал приносит ровно 15 монет.', speed: 'Быстрая рука', speedDesc: 'Мастера рисуют быстрее.', delivery: 'Частые поставки', deliveryDesc: 'Инструменты появляются чаще.', hireUpgrade: 'Новый мастер', hireDesc: 'Добавить мастера в команду.', max: 'МАКС.', buy: 'УЛУЧШИТЬ', clear: 'Сбросить прогресс', confirmClear: 'Удалить весь прогресс мастерской? Это действие нельзя отменить.', cleared: 'Прогресс сброшен.', needCoins: 'Не хватает монет.', mergeOk: 'Инструменты объединены!', maxTool: 'Инструмент уже максимального уровня.', full: 'Инвентарь заполнен.', hired: 'Новый мастер в команде!', speedUp: 'Мастера стали быстрее!', supplyUp: 'Поставки ускорены!', toolAdded: 'Новый инструмент поступил!', assigned: 'Мастер приступил к работе!', completed: 'Рисунок готов · +15 ¢', choose: 'Сначала выбери инструмент.', unavailable: 'Этот мастер занят.', progress: 'ХОД РАБОТЫ', level: 'УРОВЕНЬ', modalClose: 'Закрыть', capacity: '/ 12', working: 'РАБОТАЕТ', selectTool: 'ИНСТРУМЕНТ ВЫБРАН', selected: 'ВЫБРАНО', toolLevel: 'УРОВЕНЬ' },
+    en: { district: 'WORK ZONE ·', place: 'Old Industrial Yard', wall: 'WALL', coins: 'COINS', upgrades: 'UPGRADES', crewKick: 'YOUR CREW', crew: 'Artists', crewNote: 'Choose a tool, then an artist to start a piece.', master: 'ARTIST', masters: 'ARTISTS', supplies: 'Paint & tools', inventory: 'INVENTORY', merge: 'Select two matching tools to merge them.', tip: 'Choose a tool and assign an artist to the wall.', alive: 'WALL IN PROGRESS', painting: 'ARTISTS AT WORK', idle: 'WAITING FOR SUPPLIES', waiting: 'AVAILABLE', busy: 'PAINTING', finished: 'DONE', supply: 'NEXT SUPPLY', in: 'in', seconds: 'sec.', save: 'AUTOSAVE ENABLED', saved: 'SAVED', hire: 'Expand the crew', hireDescription: 'Hire another artist', reward: 'REWARD', each: 'PER ARTWORK', upgradesTitle: 'Upgrades', kicker: 'GROW YOUR WORKSHOP', foot: 'Every finished mural earns exactly 15 coins.', speed: 'Quick hands', speedDesc: 'Artists finish their paintings faster.', delivery: 'Frequent drops', deliveryDesc: 'Tools arrive more often.', hireUpgrade: 'New artist', hireDesc: 'Add an artist to your crew.', max: 'MAX', buy: 'UPGRADE', clear: 'Reset progress', confirmClear: 'Delete all workshop progress? This cannot be undone.', cleared: 'Progress reset.', needCoins: 'Not enough coins.', mergeOk: 'Tools merged!', maxTool: 'That tool is already at max level.', full: 'Inventory is full.', hired: 'A new artist joined the crew!', speedUp: 'Artists are working faster!', supplyUp: 'Supplies arrive faster!', toolAdded: 'Fresh tool delivered!', assigned: 'Artist started painting!', completed: 'Artwork finished · +15 ¢', choose: 'Choose a tool first.', unavailable: 'This artist is busy.', progress: 'ART PROGRESS', level: 'LEVEL', modalClose: 'Close', capacity: '/ 12', working: 'WORKING', selectTool: 'TOOL SELECTED', selected: 'SELECTED', toolLevel: 'LEVEL' }
   };
-  const initial = {coins:35,items:Array(16).fill(0),capacity:16,artists:1,efficiency:1,supply:1,wall:1,spawnAt:Date.now()+24000,discovered:[true,false,false,false,false,false],drawings:0,combo:0,lastMerge:0,language:'ru',lastSave:Date.now(),jobs:[],murals:[]};
-  const rarityData={common:{ru:'ОБЫЧ.',en:'COM',color:'#9b9b91'},rare:{ru:'РЕДК.',en:'RARE',color:'#69b8e8'},epic:{ru:'ЭПИК',en:'EPIC',color:'#c07bea'}};
-  const muralWords={ru:['ЖАР','ШУМ','МИР','БИТ','СЛЕД','ИСКРА','ДВОР','РИТМ','ВОЛЯ','СВЕТ','КОТ','ДРАЙВ'],en:['HEAT','NOISE','PEACE','BEAT','TRACE','SPARK','YARD','RHYTHM','SOUL','GLOW','CREW','VIBE']};
-  let s;
-  try { const saved=JSON.parse(localStorage.getItem('graffiti-merge-save')); s=Object.assign({},initial,saved); if(!Array.isArray(s.items))s.items=initial.items.slice(); s.items=Array.from({length:Math.max(s.capacity,16)},(_,i)=>s.items[i]||0); s.capacity=Math.max(16,Math.min(24,s.capacity||16)); s.jobs=Array.isArray(s.jobs)?s.jobs:[]; s.murals=Array.isArray(s.murals)?s.murals.slice(-12):[]; s.murals=s.murals.map((m,i)=>({...m,wallIndex:Number.isInteger(m.wallIndex)?((m.wallIndex%12)+12)%12:i%12,rarity:['common','rare','epic'].includes(m.rarity)?m.rarity:'common',word:typeof m.word==='string'?m.word:muralWords[s.language==='en'?'en':'ru'][i%muralWords.ru.length]})); s.jobs=s.jobs.map((j,i)=>j&&typeof j==='object'?{...j,level:Math.max(1,Math.min(6,Number(j.level)||1)),progress:Math.max(0,Number(j.progress)||0),duration:Math.max(1000,Number(j.duration)||29000),seed:Number.isFinite(Number(j.seed))?Number(j.seed):Math.random()*1000,color:typeof j.color==='string'?j.color:'#e4b54e',word:typeof j.word==='string'?j.word:muralWords[s.language==='en'?'en':'ru'][i%muralWords.ru.length],phase:['walk','paint','return'].includes(j.phase)?j.phase:'paint',phaseAt:Number(j.phaseAt)||Date.now(),artist:Number.isInteger(j.artist)?j.artist:i,wallIndex:Number.isInteger(j.wallIndex)?((j.wallIndex%12)+12)%12:undefined}:null); s.artists=Math.max(1,s.artists||1); s.language=s.language==='en'?'en':'ru'; } catch {s={...initial,items:initial.items.slice()};}
-  s.coins=Number.isFinite(Number(s.coins))?Math.max(0,Math.floor(Number(s.coins))):initial.coins;
-  s.jobs=s.jobs.slice(0,s.artists);
-  s.jobs.forEach((job,i)=>{if(job&&!Number.isInteger(job.wallIndex))job.wallIndex=(s.murals.length+(Number.isInteger(job.artist)?job.artist:i))%12;});
-  const t=()=>translations[s.language];
-  let selected=-1, dragFrom=-1, pointerHandled=false, toastTimer, lastFrame=performance.now(), lastJobPersist=Date.now(), confetti=[], soundCtx=null, scene=$('scene'),ctx=scene.getContext('2d');
-  const spawnDelay=()=>Math.max(9000,24000-(s.supply-1)*2500);
-  function save(){s.lastSave=Date.now();try{localStorage.setItem('graffiti-merge-save',JSON.stringify(s));}catch{} $('save-status').textContent=t().saved;setTimeout(()=>{$('save-status').textContent=t().auto},900);}
-  function notify(message){const el=$('toast');el.textContent=message;el.classList.add('show');clearTimeout(toastTimer);toastTimer=setTimeout(()=>el.classList.remove('show'),1650);}
-  function sound(freq=520,duration=.07,type='sine'){try{soundCtx=soundCtx||new(window.AudioContext||window.webkitAudioContext)();const o=soundCtx.createOscillator(),g=soundCtx.createGain();o.type=type;o.frequency.value=freq;g.gain.setValueAtTime(.035,soundCtx.currentTime);g.gain.exponentialRampToValueAtTime(.001,soundCtx.currentTime+duration);o.connect(g);g.connect(soundCtx.destination);o.start();o.stop(soundCtx.currentTime+duration);}catch{}}
-  function fmt(n){return Math.floor(n).toLocaleString(s.language==='ru'?'ru-RU':'en-US');}
-  function plural(n){if(s.language==='en')return n===1?0:1;const a=n%10,b=n%100;return a===1&&b!==11?0:a>=2&&a<=4&&(b<12||b>14)?1:2;}
-  function price(kind){return ({hire:Math.round(155*Math.pow(1.82,s.artists-1)),eff:Math.round(105*Math.pow(1.72,s.efficiency-1)),supply:Math.round(130*Math.pow(1.78,s.supply-1)),board:Math.round(210*Math.pow(1.9,(s.capacity-16)/4)),wall:Math.round(180*Math.pow(2.05,s.wall-1))})[kind];}
-  function makeJob(level=1){const words=muralWords[s.language==='en'?'en':'ru'];return {level,progress:0,duration:Math.max(12,29-(s.efficiency-1)*2.1)*1000*(1+(level-1)*.055),seed:Math.random()*1000,color:['#e4b54e','#df6553','#6796a1','#90a45d','#ba79a2'][Math.floor(Math.random()*5)],word:words[Math.floor(Math.random()*words.length)]};}
-  function rollRarity(){const roll=Math.random();return roll<.05?'epic':roll<.25?'rare':'common';}
-  function render(){const tr=t();$('coins').textContent=fmt(s.coins);$('loc-eyebrow').textContent=`${tr.loc} ${String(s.wall).padStart(2,'0')}`;$('location-name').textContent=s.wall<3?tr.old:s.wall<5?tr.under:tr.rooftop;$('wall-label').textContent=`${tr.wall} ${s.wall}`;$('scene-level').textContent=`✦ ${s.wall}`;$('artist-count').textContent=s.artists;$('artist-word').textContent=tr.artists[plural(s.artists)];$('artist-subtitle').textContent=tr.active;$('scene-status').textContent=s.jobs.some(j=>j&&j.phase==='paint')?tr.working:tr.idle;$('artist-slots').innerHTML=Array.from({length:s.artists},(_,i)=>{const job=s.jobs[i],status=!job?tr.slotReady:job.phase==='walk'?tr.slotWalk:job.phase==='return'?tr.slotReturn:tr.slotPaint;return `<button type="button" class="artist-slot ${job?'busy':'ready'}" data-artist="${i}" aria-label="${tr.artistShort} ${i+1}: ${status}">${job?`<img src="${toolIcons[Math.max(0,Math.min(5,job.level-1))]}" alt="">`:'<span class="slot-plus">+</span>'}<small>${status}</small></button>`;}).join('');document.querySelectorAll('.artist-slot').forEach(slot=>slot.addEventListener('click',()=>onSlotClick(Number(slot.dataset.artist))));
-    $('earn-range').textContent='15';$('board-title').textContent=tr.board;$('board-hint').textContent=tr.hint;$('spawn-label').textContent=tr.spawn;$('upgrade-title').textContent=tr.upTitle;$('upgrade-button-label').textContent=s.language==='ru'?'УЛУЧШЕНИЯ':'UPGRADES';$('upgrade-kicker').textContent=s.language==='ru'?'РАСТИ И ПРОЦВЕТАЙ':'GROW YOUR CREW';$('coins-label').textContent=tr.coins;$('goal-title').textContent=tr.goal;$('collection-title').textContent=tr.collection;$('collection-eyebrow').textContent=tr.collectionEyebrow;$('save-status').textContent=tr.auto;
-    const board=$('board');board.innerHTML='';board.style.gridTemplateColumns='repeat(4,1fr)';for(let i=0;i<s.capacity;i++){const cell=document.createElement('div');cell.className='board-cell'+(selected===i?' selected':'');cell.dataset.index=i;cell.setAttribute('role','gridcell');cell.setAttribute('aria-label',s.items[i]?`${toolNames[s.items[i]-1]}, уровень ${s.items[i]}`:'Пустая ячейка');if(s.items[i]){const icon=document.createElement('img');icon.className='tool';icon.draggable=false;icon.src=toolIcons[s.items[i]-1];icon.alt=toolNames[s.items[i]-1];const lv=document.createElement('span');lv.className='level-tag';lv.textContent='LV '+s.items[i];cell.append(icon,lv);}cell.addEventListener('pointerdown',e=>onPointerDown(e,i));cell.addEventListener('pointerenter',()=>{if(dragFrom>=0)cell.classList.add('drag-over')});cell.addEventListener('pointerleave',()=>cell.classList.remove('drag-over'));cell.addEventListener('click',()=>onCellClick(i));board.appendChild(cell);}
-    $('occupied').textContent=s.items.slice(0,s.capacity).filter(Boolean).length;$('capacity').textContent=s.capacity;
-    updateSpawnUI();
-    $('item-legend').innerHTML=toolNames.slice(0,3).map((name,i)=>`<span class="legend-item"><img class="legend-icon" src="${toolIcons[i]}" alt="">${name}</span>`).join('');
-    const upgrades=[['hire','<span class="upgrade-pixel artist-pixel"></span>',tr.artistsLabel,tr.upDescHire,price('hire'),tr.hireBtn,'artists'],['eff',`<img src="${toolIcons[1]}" alt="">`,tr.speedLabel,tr.upDescEff,price('eff'),tr.buy,'speed'],['supply',`<img src="${toolIcons[3]}" alt="">`,tr.supplyLabel,tr.upDescSupply,price('supply'),tr.buy,'equipment'],['board',`<img src="${toolIcons[5]}" alt="">`,tr.boardLabel,tr.upDescBoard,price('board'),tr.buy,'workspace'],['wall',`<img src="${toolIcons[2]}" alt="">`,tr.wallLabel,tr.upDescWall,price('wall'),tr.buy,'workspace']];
-    const groupNames=s.language==='ru'?{artists:'ХУДОЖНИКИ',equipment:'ИНВЕНТАРЬ',speed:'СКОРОСТЬ РАБОТЫ',workspace:'МАСТЕРСКАЯ'}:{artists:'ARTISTS',equipment:'EQUIPMENT',speed:'WORK SPEED',workspace:'WORKSPACE'};
-    $('upgrades').innerHTML=['artists','equipment','speed','workspace'].map(group=>`<section class="upgrade-group"><h3>${groupNames[group]}</h3>${upgrades.filter(item=>item[6]===group).map(([key,icon,name,desc,cost,button])=>{const level=key==='hire'?s.artists:key==='eff'?s.efficiency:key==='supply'?s.supply:key==='board'?Math.floor((s.capacity-16)/4)+1:s.wall;const isMax=key==='hire'?s.artists>=6:key==='board'?s.capacity>=24:key==='wall'?s.wall>=6:key==='eff'?s.efficiency>=8:s.supply>=6;return `<div class="upgrade-row"><span class="upgrade-icon">${icon}</span><span class="upgrade-copy"><b>${name} · ${level}</b><small>${desc}</small></span><button class="buy-button" data-buy="${key}" ${isMax||s.coins<cost?'disabled':''}>${isMax?tr.max:`${button}<br><span>¢ ${fmt(cost)}</span>`}</button></div>`;}).join('')}</section>`).join('');document.querySelectorAll('[data-buy]').forEach(b=>b.onclick=()=>buy(b.dataset.buy));
-    const target=3,progress=Math.min(100,Math.round((s.wall-1)/(target-1)*100));$('goal-progress').style.width=progress+'%';$('goal-percent').textContent=progress+'%';$('goal-main').textContent=s.wall<3?tr.goalMain:s.wall<5?tr.next:tr.language==='ru'?'Все районы открыты!':'All districts unlocked!';$('goal-sub').textContent=s.wall<3?tr.goalSub:s.wall<5?tr.nextSub:'';
-    $('collection-count').textContent=`${s.discovered.filter(Boolean).length} / 6`;$('collection-items').innerHTML=toolIcons.map((icon,i)=>`<span class="collection-slot ${s.discovered[i]?'':'locked'}" title="${s.discovered[i]?toolNames[i]:(tr.need+' '+(i+1))}"><img src="${icon}" alt=""><span>${s.discovered[i]?'✓':i+1}</span></span>`).join('');
-    updateArtProgress();
+  const freshState = () => ({ version: 2, coins: 35, items: [1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], artists: 1, speed: 1, supply: 1, jobs: [], murals: [], drawings: 0, nextSupplyAt: Date.now() + 10000, language: 'ru' });
+  let state;
+  try {
+    const saved = JSON.parse(localStorage.getItem(SAVE_KEY) || 'null');
+    state = saved && saved.version === 2 ? { ...freshState(), ...saved } : freshState();
+  } catch { state = freshState(); }
+  state.coins = Math.max(0, Math.floor(Number(state.coins) || 0));
+  state.artists = Math.max(1, Math.min(MAX_ARTISTS, Math.floor(Number(state.artists) || 1)));
+  state.speed = Math.max(1, Math.min(8, Math.floor(Number(state.speed) || 1)));
+  state.supply = Math.max(1, Math.min(6, Math.floor(Number(state.supply) || 1)));
+  state.items = Array.from({ length: MAX_TOOLS }, (_, i) => Math.max(0, Math.min(6, Math.floor(Number(state.items?.[i]) || 0))));
+  state.jobs = Array.from({ length: state.artists }, (_, i) => {
+    const j = state.jobs?.[i];
+    return j && Number.isFinite(j.started) && Number.isFinite(j.duration) ? { started: j.started, duration: Math.max(5000, j.duration), level: Math.max(1, Math.min(6, j.level | 0)), color: muralColors.includes(j.color) ? j.color : muralColors[i % muralColors.length], word: typeof j.word === 'string' ? j.word : words.ru[i % words.ru.length], seed: Number(j.seed) || Math.random(), artist: i } : null;
+  });
+  state.murals = Array.isArray(state.murals) ? state.murals.slice(-12).map((m, i) => ({ word: typeof m.word === 'string' ? m.word : words.ru[i % 12], color: muralColors.includes(m.color) ? m.color : muralColors[i % muralColors.length], seed: Number(m.seed) || i + 1 })) : [];
+  state.language = state.language === 'en' ? 'en' : 'ru';
+  let selectedTool = -1;
+  let toastTimer = 0;
+  let lastFrame = performance.now();
+  let ctx;
+  const canvas = $('wall');
+  const canvasCtx = canvas.getContext('2d');
+  const overlay = $('upgrade-overlay');
+  const t = () => tr[state.language];
+  const price = type => type === 'hire' ? Math.round(75 * Math.pow(1.75, state.artists - 1)) : type === 'speed' ? Math.round(55 * Math.pow(1.7, state.speed - 1)) : Math.round(60 * Math.pow(1.75, state.supply - 1));
+  const durationFor = level => Math.max(8500, 26000 / (1 + (state.speed - 1) * .28) / (1 + (level - 1) * .08));
+  const inventoryCount = () => state.items.filter(Boolean).length;
+  const fmt = n => Math.floor(n).toLocaleString(state.language === 'ru' ? 'ru-RU' : 'en-US');
+  function save() {
+    try { localStorage.setItem(SAVE_KEY, JSON.stringify(state)); $('save-indicator').textContent = t().saved; }
+    catch { $('save-indicator').textContent = '—'; }
   }
-  function updateSpawnUI(){const tr=t(),remaining=Math.max(0,s.spawnAt-Date.now()),elapsed=spawnDelay()-remaining;$('spawn-in').textContent=`${tr.delivery} ${Math.ceil(remaining/1000)} ${s.language==='ru'?'сек.':'sec.'}`;$('spawn-progress').style.width=`${Math.max(0,Math.min(100,elapsed/spawnDelay()*100))}%`;}
-  function updateArtProgress(){
-    const jobs=s.jobs.filter(Boolean),job=jobs.find(j=>j.phase==='paint')||jobs.find(j=>j.phase==='walk')||jobs.find(j=>j.phase==='return');
-    let percent=0,stage='stageStarting';
-    if(job?.phase==='return'||job?.rewarded){percent=100;stage='stageCompleted';}
-    else if(job){percent=job.phase==='walk'?0:Math.min(99,Math.floor(Math.max(0,job.progress)/Math.max(1,job.duration)*100));stage=percent<12?'stageStarting':percent<40?'stageSketching':percent<72?'stageColoring':'stageOutlining';}
-    $('progress-stage').textContent=t()[stage];$('progress-percent').textContent=`${percent}%`;$('progress-fill').style.width=`${percent}%`;
-    $('progress-track').setAttribute('aria-valuenow',String(percent));$('progress-track').setAttribute('aria-label',t().progressLabel);
+  function notify(message) {
+    const el = $('toast'); el.textContent = message; el.classList.add('show');
+    clearTimeout(toastTimer); toastTimer = setTimeout(() => el.classList.remove('show'), 1800);
   }
-  function onPointerDown(e,i){pointerHandled=false;if(!s.items[i])return;e.preventDefault();dragFrom=i;try{e.currentTarget.setPointerCapture(e.pointerId)}catch{}e.currentTarget.style.opacity='.6';}
-  function onPointerUp(e){if(dragFrom<0)return;const from=dragFrom,hit=document.elementFromPoint(e.clientX,e.clientY);const slot=hit?.closest('.artist-slot'),cell=hit?.closest('.board-cell');dragFrom=-1;document.querySelectorAll('.board-cell').forEach(c=>{c.style.opacity='';c.classList.remove('drag-over')});pointerHandled=true;setTimeout(()=>{pointerHandled=false;},0);if(slot){assignItem(from,Number(slot.dataset.artist));return;}if(cell){const to=Number(cell.dataset.index);if(from!==to)moveItem(from,to);else pointerHandled=false;}else{render();}}
-  document.addEventListener('pointerup',onPointerUp);
-  function onCellClick(i){if(pointerHandled){pointerHandled=false;return;}if(dragFrom>=0)return;if(selected<0){if(s.items[i]){selected=i;render();}return;}if(selected===i){selected=-1;render();return;}if(!s.items[i]){moveItem(selected,i);selected=-1;return;}if(s.items[selected]===s.items[i]){moveItem(selected,i);selected=-1;return;}selected=i;render();}
-  function onSlotClick(i){if(selected<0)return;assignItem(selected,i);}
-  function assignItem(from,artist){if(!s.items[from])return;if(s.jobs[artist]){notify(t().rejected);selected=-1;render();return;}const level=s.items[from];s.items[from]=0;s.jobs[artist]={...makeJob(level),phase:'walk',phaseAt:Date.now(),artist,wallIndex:(s.murals.length+artist)%12};selected=-1;render();save();sound(430,.07,'triangle');}
-  function moveItem(from,to){if(!s.items[from])return;if(!s.items[to]){s.items[to]=s.items[from];s.items[from]=0;selected=-1;render();save();sound(390,.05);return;}if(s.items[from]===s.items[to]){if(s.items[to]>=6){notify(s.language==='ru'?'Это максимальный уровень!':'Maximum tool level!');return;}const level=s.items[to]+1;s.items[to]=level;s.items[from]=0;s.discovered[level-1]=true;const now=Date.now();s.combo=now-s.lastMerge<7000?s.combo+1:1;s.lastMerge=now;selected=-1;render();const cell=$(`.board-cell[data-index="${to}"]`);if(cell)cell.classList.add('merged');confetti.push({x:.25+Math.random()*.5,y:.36,color:toolColors[level-1],life:1});sound(500+level*80,.12,'triangle');notify(t().merge);render();save();return;}notify(s.language==='ru'?'Нужны одинаковые инструменты':'Tools must match');}
-  function spawn(){let empty=[];for(let i=0;i<s.capacity;i++)if(!s.items[i])empty.push(i);if(!empty.length){s.spawnAt=Date.now()+7000;updateSpawnUI();return;}const i=empty[Math.floor(Math.random()*empty.length)];const maxLevel=Math.min(4,1+Math.floor((s.wall-1)/2)+Math.floor((s.supply-1)/2));const level=Math.random()<Math.min(.24,(s.supply-1)*.035)?Math.floor(Math.random()*maxLevel)+1:1;s.items[i]=level;s.discovered[level-1]=true;s.spawnAt=Date.now()+spawnDelay();render();save();sound(320,.035);}
-  function buy(key){const cost=price(key);if(s.coins<cost){notify(t().poor);return;}if(key==='hire'&&s.artists>=6||key==='board'&&s.capacity>=24||key==='wall'&&s.wall>=6||key==='eff'&&s.efficiency>=8||key==='supply'&&s.supply>=6)return;s.coins-=cost;let msg=t().bought;if(key==='hire'){s.artists++;msg=t().hire;}if(key==='eff'){s.efficiency++;msg=t().artistUp;s.jobs=s.jobs.map(j=>j?{...j,duration:Math.max(j.progress*1000+1000,j.duration*.88)}:j);}if(key==='supply'){s.supply++;s.spawnAt=Math.min(s.spawnAt,Date.now()+spawnDelay());msg=t().spawnUp;}if(key==='board'){s.capacity+=4;s.items.length=s.capacity;msg=t().boardUp;}if(key==='wall'){s.wall++;msg=t().wallUp;if(s.wall===3)msg=t().location;}selected=-1;render();save();sound(650,.1,'triangle');notify(msg);}
-  function step(now){const dt=Math.min(100,now-lastFrame);lastFrame=now;let changed=false;while(s.jobs.length<s.artists)s.jobs.push(null);for(let i=0;i<s.artists;i++){const job=s.jobs[i];if(!job)continue;if(!job.phase)job.phase='paint';if(job.phase==='walk'){if(Date.now()-job.phaseAt>=850){job.phase='paint';job.phaseAt=Date.now();changed=true;}}else if(job.phase==='paint'){job.progress=Math.min(job.duration,job.progress+dt);if(job.progress>=job.duration){const reward=15,rarity=rollRarity();s.coins+=reward;s.drawings++;s.murals.push({seed:job.seed,color:job.color,level:job.level,wallIndex:job.wallIndex,rarity,word:job.word});s.murals=s.murals.slice(-12);job.phase='return';job.phaseAt=Date.now();job.rewarded=true;const burst=rarity==='epic'?34:rarity==='rare'?20:9,burstColor=rarityData[rarity].color,cx=.08+((job.wallIndex%6)+.5)/6*.84,cy=.18+Math.floor(job.wallIndex/6)*.23;for(let n=0;n<burst;n++)confetti.push({x:cx+(Math.random()-.5)*(rarity==='epic'?.34:.22),y:cy+(Math.random()-.5)*.24,color:n%3===0?job.color:burstColor,life:1});sound(rarity==='epic'?980:rarity==='rare'?840:760,.1,'sine');notify(`${t().artistShort} ${i+1} ${t().jobDone} · ${rarityData[rarity][s.language]}: +${fmt(reward)} ¢`);changed=true;}}else if(job.phase==='return'&&Date.now()-job.phaseAt>=850){s.jobs[i]=null;changed=true;}}if(Date.now()-lastJobPersist>1800){lastJobPersist=Date.now();try{s.lastSave=Date.now();localStorage.setItem('graffiti-merge-save',JSON.stringify(s));}catch{}}if(changed){render();save();}updateArtProgress();renderScene(now);requestAnimationFrame(step);}
-  function drawGraffiti(index,seed,color,progress,word='ЖАР',rarity=null){
-    const slot=index%12,col=slot%6,row=Math.floor(slot/6),tileW=65,tileH=61,x=10+col*66,y=7+row*68,variant=Math.abs(Math.floor(seed||0))%4,p=Math.max(0,Math.min(1,progress));
-    const label=rarity?rarityData[rarity]?.[s.language]:'',accent=['#f1cb63','#f4e3a8','#8bd3d9','#f29e73'][variant],rColor=rarity?rarityData[rarity].color:'#e4c66d';
-    ctx.save();ctx.beginPath();ctx.rect(x,y,tileW,tileH);ctx.clip();ctx.globalAlpha=.94;
-    if(rarity==='epic'||rarity==='rare'){ctx.fillStyle=rColor;ctx.globalAlpha=rarity==='epic'?.34:.24;ctx.fillRect(x,y+1,tileW,2);ctx.fillRect(x,y+tileH-4,tileW,2);ctx.globalAlpha=.94;}
-    ctx.globalAlpha=.52;ctx.fillStyle='#192330';ctx.fillRect(x+4,y+6,tileW-8,tileH-18);ctx.globalAlpha=.94;
-    const text=String(word||'ЖАР').toLocaleUpperCase(),center=x+tileW/2,baseline=y+tileH*.45;ctx.font=`700 ${text.length>5?12:text.length>4?14:17}px "Pixelify Sans", monospace`;ctx.textAlign='center';ctx.textBaseline='middle';
-    while(ctx.measureText(text).width>tileW-10&&parseFloat(ctx.font)>7)ctx.font=`700 ${parseFloat(ctx.font)-1}px "Pixelify Sans", monospace`;
-    ctx.beginPath();ctx.rect(x,y,tileW*p,tileH);ctx.clip();ctx.translate(center,baseline);ctx.rotate((variant-1.5)*.025);
-    ctx.lineJoin='miter';ctx.textAlign='center';ctx.textBaseline='middle';ctx.font=ctx.font;
-    ctx.lineWidth=5;ctx.strokeStyle='#211928';ctx.strokeText(text,2,3);
-    ctx.lineWidth=3;ctx.strokeStyle=variant%2?'#f2c95e':'#f1e4be';ctx.strokeText(text,0,0);
-    ctx.fillStyle=color;ctx.fillText(text,0,0);
-    ctx.globalAlpha=.7;ctx.fillStyle=accent;ctx.fillRect(-Math.min(22,ctx.measureText(text).width*.34),-3,Math.min(44,ctx.measureText(text).width*.68),2);ctx.globalAlpha=.94;ctx.restore();
-    if(p>.42){ctx.fillStyle=accent;const sx=x+(variant%2?7:tileW-10),sy=y+7;ctx.fillRect(sx,sy,3,3);ctx.fillRect(sx-2,sy+1,7,1);ctx.fillRect(sx+1,sy-2,1,7);}
-    if(p>.72){ctx.fillStyle=color;const dripX=x+(variant%2?14:tileW-16);ctx.fillRect(dripX,y+tileH-20,3,Math.min(8,Math.round((p-.7)*28)));ctx.fillRect(dripX+5,y+tileH-18,2,Math.min(6,Math.round((p-.7)*20)));}
-    if(label&&p>=1){ctx.globalAlpha=.96;ctx.font='700 7px "Pixelify Sans", monospace';ctx.textAlign='center';ctx.textBaseline='middle';const badge=label;const bw=Math.min(tileW-4,ctx.measureText(badge).width+10),bx=x+(tileW-bw)/2;ctx.fillStyle='#211b20';ctx.fillRect(bx,y+tileH-16,bw,10);ctx.fillStyle=rColor;ctx.fillRect(bx+1,y+tileH-15,bw-2,8);ctx.fillStyle='#211b20';ctx.fillText(badge,x+tileW/2,y+tileH-11);ctx.globalAlpha=1;}
+  function startJob(index, toolIndex) {
+    if (!state.items[toolIndex]) return;
+    if (state.jobs[index]) { notify(t().unavailable); return; }
+    const level = state.items[toolIndex];
+    state.items[toolIndex] = 0; selectedTool = -1;
+    state.jobs[index] = { started: Date.now(), duration: durationFor(level), level, color: muralColors[Math.floor(Math.random() * muralColors.length)], word: words[state.language][Math.floor(Math.random() * words[state.language].length)], seed: Math.random(), artist: index };
+    notify(t().assigned); save(); render();
   }
-  function renderScene(time){
-     const rect=scene.getBoundingClientRect(),dpr=Math.min(2,window.devicePixelRatio||1),w=Math.max(1,Math.floor(rect.width*dpr)),h=Math.max(1,Math.floor(rect.height*dpr));if(scene.width!==w||scene.height!==h)scene.width=w,scene.height=h;
-     const scale=Math.max(w/420,h/180);ctx.setTransform(scale,0,0,scale,(w-420*scale)/2,(h-180*scale)/2);ctx.imageSmoothingEnabled=false;ctx.clearRect(0,0,420,180);if(pixelAssets.alley.complete&&pixelAssets.alley.naturalWidth)ctx.drawImage(pixelAssets.alley,0,0,420,180);else{ctx.fillStyle='#172238';ctx.fillRect(0,0,420,180);}
-     s.murals.forEach((m,i)=>drawGraffiti(Number.isInteger(m.wallIndex)?m.wallIndex:i%12,m.seed,m.color,1,m.word,m.rarity));const count=Math.max(1,Math.min(s.artists,6));
-     for(let i=0;i<count;i++){const job=s.jobs[i],baseX=count===1?210:42+i*(336/(count-1));let targetX=baseX;if(job)targetX=48+(job.wallIndex%5)*68+24;let artistX=baseX;if(job?.phase==='walk'){const p=Math.min(1,(Date.now()-job.phaseAt)/850);artistX=baseX+(targetX-baseX)*p;}else if(job?.phase==='paint')artistX=targetX;else if(job?.phase==='return'){const p=Math.min(1,(Date.now()-job.phaseAt)/850);artistX=targetX+(baseX-targetX)*p;}else artistX+=Math.sin(time/820+i*2.6)*11;const x=Math.floor(artistX-30),y=Math.floor(80+(job?.phase==='paint'?0:Math.sin(time/180+i*2)*1)),painting=job?.phase==='paint';if(pixelAssets.sprites.complete&&pixelAssets.sprites.naturalWidth){const frame=painting?2+Math.floor(time/135+i)%2:Math.floor(time/210+i)%2;ctx.drawImage(pixelAssets.sprites,frame*24,0,24,32,x,y,60,80);}if(painting){const p=job.progress/Math.max(1,job.duration);drawGraffiti(job.wallIndex,job.seed,job.color,p,job.word);const flicker=Math.floor(time/90+i)%3;ctx.fillStyle=job.color;ctx.globalAlpha=.8;ctx.fillRect(x+53,y+27+flicker,5,4);ctx.fillRect(x+60,y+22+(flicker+1)%3,4,4);ctx.globalAlpha=1;}}
-     confetti=confetti.filter(c=>c.life>0);confetti.forEach(c=>{c.life-=.025;ctx.globalAlpha=c.life;ctx.fillStyle=c.color;ctx.fillRect(Math.floor(c.x*420+(1-c.life)*10),Math.floor(c.y*180+(1-c.life)*18),4,4);});ctx.globalAlpha=1;
-   }
-  const overlay=$('upgrade-overlay');
-  function showUpgrades(show){overlay.classList.toggle('open',show);overlay.setAttribute('aria-hidden',String(!show));if(show)$('close-upgrades').focus();else $('open-upgrades').focus();}
-  $('open-upgrades').addEventListener('click',()=>showUpgrades(true));$('close-upgrades').addEventListener('click',()=>showUpgrades(false));overlay.addEventListener('pointerdown',e=>{if(e.target===overlay)showUpgrades(false);});document.addEventListener('keydown',e=>{if(e.key==='Escape'&&overlay.classList.contains('open'))showUpgrades(false);});
-  $('language').addEventListener('click',()=>{s.language=s.language==='ru'?'en':'ru';document.documentElement.lang=s.language;render();save();});
-  window.addEventListener('beforeunload',save);document.addEventListener('visibilitychange',()=>{if(document.hidden)save();else if(Date.now()>=s.spawnAt)spawn();});window.addEventListener('resize',()=>{scene.width=0;});
-  window.setInterval(()=>{if(Date.now()>=s.spawnAt)spawn();else updateSpawnUI();},250);
-  render();requestAnimationFrame(step);
+  function mergeTools(from, to) {
+    if (from === to || !state.items[from] || !state.items[to]) return false;
+    if (state.items[from] !== state.items[to]) { selectedTool = to; render(); return false; }
+    if (state.items[to] >= 6) { notify(t().maxTool); return false; }
+    state.items[to]++; state.items[from] = 0; selectedTool = -1;
+    notify(t().mergeOk); save(); render(); return true;
+  }
+  function render() {
+    const lang = state.language; const trn = t();
+    document.documentElement.lang = lang;
+    $('coins').textContent = fmt(state.coins); $('coins-label').textContent = trn.coins;
+    $('district-label').textContent = `${trn.district} 01`; $('district-name').textContent = trn.place;
+    $('wall-label').textContent = `${trn.wall} ${Math.min(6, 1 + Math.floor(state.drawings / 5))}`;
+    $('upgrade-label').textContent = trn.upgrades; $('crew-kicker').textContent = trn.crewKick;
+    $('crew-title').textContent = trn.crew; $('crew-note').textContent = trn.crewNote;
+    $('crew-unit').textContent = state.artists === 1 ? trn.master : trn.masters;
+    $('supplies-kicker').textContent = trn.inventory; $('supplies-title').textContent = trn.supplies;
+    $('merge-note').textContent = selectedTool >= 0 ? `${trn.selected}: ${toolNames[lang][state.items[selectedTool] - 1]} · ${trn.toolLevel} ${state.items[selectedTool]}` : trn.merge;
+    $('wall-tip').textContent = selectedTool >= 0 ? trn.selectTool : trn.tip;
+    $('wall-status').textContent = state.jobs.some(Boolean) ? trn.painting : trn.alive;
+    $('active-count').textContent = `${state.jobs.filter(Boolean).length} ${trn.working}`;
+    $('artist-count').textContent = state.artists; $('inventory-count').textContent = inventoryCount(); $('inventory-cap').textContent = trn.capacity;
+    $('crew-list').innerHTML = Array.from({ length: state.artists }, (_, i) => `<button type="button" class="crew-card${state.jobs[i] ? ' busy' : ''}${!state.jobs[i] && selectedTool >= 0 ? ' selected-target' : ''}" data-artist="${i}" aria-label="${names[lang][i]}: ${state.jobs[i] ? trn.busy : trn.waiting}"><span class="crew-avatar" aria-hidden="true"></span><span class="crew-name">${names[lang][i]}</span><span class="crew-state">${state.jobs[i] ? trn.busy : trn.waiting}</span></button>`).join('');
+    $('crew-list').querySelectorAll('[data-artist]').forEach(button => button.addEventListener('click', () => { if (selectedTool < 0) { notify(trn.choose); return; } startJob(Number(button.dataset.artist), selectedTool); }));
+    $('inventory-grid').innerHTML = state.items.map((level, i) => level ? `<button type="button" class="tool-cell${selectedTool === i ? ' selected' : ''}" data-tool="${i}" style="--tool-color:${toolColors[level - 1]}" aria-label="${toolNames[lang][level - 1]}, ${trn.toolLevel} ${level}"><span class="tool-art" aria-hidden="true"></span><span class="tool-level">${level}</span></button>` : `<div class="tool-cell empty" aria-hidden="true"></div>`).join('');
+    $('inventory-grid').querySelectorAll('[data-tool]').forEach(button => button.addEventListener('click', event => { const index = Number(event.currentTarget.dataset.tool); if (selectedTool < 0) { selectedTool = index; render(); return; } if (selectedTool === index) { selectedTool = -1; render(); return; } if (!mergeTools(selectedTool, index)) { if (state.items[selectedTool] !== state.items[index]) notify(trn.merge); } }));
+    $('hire-title').textContent = trn.hire; $('hire-description').textContent = trn.hireDescription;
+    $('hire-cost').textContent = fmt(price('hire')); $('hire-quick').disabled = state.artists >= MAX_ARTISTS || state.coins < price('hire');
+    $('hire-quick').onclick = () => purchase('hire');
+    $('language').textContent = lang.toUpperCase(); $('language').setAttribute('aria-label', lang === 'ru' ? 'Switch language' : 'Сменить язык');
+    $('upgrade-kicker').textContent = trn.kicker; $('upgrade-title').textContent = trn.upgradesTitle; $('upgrade-footnote').textContent = trn.foot;
+    $('clear-progress').textContent = trn.clear;
+    renderUpgrades(); renderProgress();
+  }
+  function renderUpgrades() {
+    const options = [
+      { id: 'hire', icon: '+', title: t().hireUpgrade, desc: t().hireDesc, level: state.artists, max: state.artists >= MAX_ARTISTS },
+      { id: 'speed', icon: '↯', title: t().speed, desc: t().speedDesc, level: state.speed, max: state.speed >= 8 },
+      { id: 'supply', icon: '↻', title: t().delivery, desc: t().deliveryDesc, level: state.supply, max: state.supply >= 6 }
+    ];
+    $('upgrade-list').innerHTML = options.map(item => `<div class="upgrade-row"><span class="upgrade-symbol">${item.icon}</span><span class="upgrade-copy"><b>${item.title} · ${item.level}</b><small>${item.desc}</small></span><button class="buy-button" data-buy="${item.id}" ${item.max || state.coins < price(item.id) ? 'disabled' : ''}>${item.max ? t().max : `${t().buy}<span>¢ ${fmt(price(item.id))}</span>`}</button></div>`).join('');
+    $('upgrade-list').querySelectorAll('[data-buy]').forEach(button => button.addEventListener('click', () => purchase(button.dataset.buy)));
+  }
+  function renderProgress() {
+    const jobs = state.jobs.map((job, i) => job ? { job, i } : null).filter(Boolean);
+    $('artist-progress').innerHTML = jobs.length ? jobs.map(({ job, i }) => { const pct = Math.min(100, Math.floor((Date.now() - job.started) / job.duration * 100)); return `<div class="progress-card"><div class="progress-card-top"><span>${names[state.language][i]} · ${t().progress}</span><span>${pct}%</span></div><div class="progress-track"><i style="width:${pct}%"></i></div></div>`; }).join('') : `<div class="empty-progress">${t().tip}</div>`;
+  }
+  function purchase(type) {
+    const cost = price(type);
+    if (state.coins < cost) { notify(t().needCoins); return; }
+    if ((type === 'hire' && state.artists >= MAX_ARTISTS) || (type === 'speed' && state.speed >= 8) || (type === 'supply' && state.supply >= 6)) return;
+    state.coins -= cost;
+    if (type === 'hire') { state.artists++; state.jobs.push(null); notify(t().hired); }
+    if (type === 'speed') { state.speed++; notify(t().speedUp); }
+    if (type === 'supply') { state.supply++; state.nextSupplyAt = Math.min(state.nextSupplyAt, Date.now() + 3000); notify(t().supplyUp); }
+    save(); render();
+  }
+
+  function roundedRect(context, x, y, width, height, radius) {
+    const r = Math.min(radius, width / 2, height / 2);
+    context.beginPath(); context.moveTo(x + r, y); context.arcTo(x + width, y, x + width, y + height, r);
+    context.arcTo(x + width, y + height, x, y + height, r); context.arcTo(x, y + height, x, y, r);
+    context.arcTo(x, y, x + width, y, r); context.closePath();
+  }
+  function drawBackdrop(w, h) {
+    const gradient = canvasCtx.createLinearGradient(0, 0, 0, h);
+    gradient.addColorStop(0, '#66736b'); gradient.addColorStop(.4, '#414a44'); gradient.addColorStop(1, '#222a27');
+    canvasCtx.fillStyle = gradient; canvasCtx.fillRect(0, 0, w, h);
+    if (pixelAssets.alley?.complete && pixelAssets.alley.naturalWidth) {
+      canvasCtx.globalAlpha = .82; canvasCtx.imageSmoothingEnabled = false;
+      canvasCtx.drawImage(pixelAssets.alley, 0, 0, w, h * .84); canvasCtx.globalAlpha = 1;
+    }
+    // Foreground pavement and subtle workshop lighting.
+    canvasCtx.fillStyle = '#242b29'; canvasCtx.fillRect(0, h * .84, w, h * .16);
+    canvasCtx.fillStyle = '#78877a18'; canvasCtx.fillRect(0, h * .82, w, 2);
+    const glow = canvasCtx.createRadialGradient(w * .5, h * .35, 4, w * .5, h * .35, w * .65);
+    glow.addColorStop(0, '#c6f36a10'); glow.addColorStop(1, '#10141335');
+    canvasCtx.fillStyle = glow; canvasCtx.fillRect(0, 0, w, h);
+  }
+  function paintMural(mural, index, w, h, progress = 1) {
+    const columns = Math.max(1, Math.min(4, Math.floor(w / 210)));
+    const row = Math.floor(index / columns), col = index % columns;
+    const cellW = w / columns, cellH = Math.min(h * .42, Math.max(85, h * .43));
+    const x = col * cellW + cellW * .08, y = h * .12 + row * cellH * .45;
+    const mw = cellW * .82, mh = Math.min(h * .35, 100);
+    const p = Math.max(.02, Math.min(1, progress));
+    canvasCtx.save(); canvasCtx.beginPath(); canvasCtx.rect(x, y, mw * p, mh); canvasCtx.clip();
+    canvasCtx.globalAlpha = .18 + .82 * p;
+    canvasCtx.translate(x + mw / 2, y + mh / 2); canvasCtx.rotate(((mural.seed * 100) % 7 - 3) * Math.PI / 180);
+    canvasCtx.textAlign = 'center'; canvasCtx.textBaseline = 'middle';
+    canvasCtx.font = `900 ${Math.max(28, Math.min(76, mh * .73))}px Impact, "Arial Black", sans-serif`;
+    canvasCtx.lineWidth = Math.max(5, mh * .09); canvasCtx.strokeStyle = '#15201d'; canvasCtx.strokeText(mural.word, 0, 0, mw * .94);
+    canvasCtx.fillStyle = mural.color; canvasCtx.fillText(mural.word, 0, 0, mw * .94);
+    canvasCtx.globalAlpha = .8; canvasCtx.font = `900 ${Math.max(10, mh * .15)}px system-ui`; canvasCtx.fillStyle = '#f2eee0';
+    canvasCtx.fillText('✦', -mw * .36, -mh * .2); canvasCtx.fillText('✦', mw * .36, mh * .2);
+    canvasCtx.restore();
+  }
+  function drawArtist(x, y, scale, index, working) {
+    canvasCtx.save(); canvasCtx.translate(x, y); canvasCtx.scale(scale, scale);
+    canvasCtx.fillStyle = '#11171455'; canvasCtx.beginPath(); canvasCtx.ellipse(0, 2, 18, 5, 0, 0, Math.PI * 2); canvasCtx.fill();
+    // Simple pixel-inspired crew sprite, drawn locally so the scene never depends on external fonts.
+    canvasCtx.fillStyle = '#26302b'; roundedRect(canvasCtx, -10, -31, 20, 27, 4); canvasCtx.fill();
+    canvasCtx.fillStyle = ['#d59673', '#bd805e', '#e0aa81', '#a96e51', '#dca27a', '#b97e60'][index % 6];
+    canvasCtx.fillRect(-6, -45, 12, 14);
+    canvasCtx.fillStyle = ['#d4b853', '#303c45', '#d75142', '#577f63', '#c5c7bf', '#514269'][index % 6];
+    canvasCtx.fillRect(-9, -47, 18, 6); canvasCtx.fillRect(-7, -50, 14, 4);
+    canvasCtx.fillStyle = '#171d1a'; canvasCtx.fillRect(-4, -39, 2, 2); canvasCtx.fillRect(3, -39, 2, 2);
+    canvasCtx.fillStyle = '#d7dfca'; canvasCtx.fillRect(-8, -29, 16, 13);
+    canvasCtx.fillStyle = working ? '#f27b50' : '#c6f36a'; canvasCtx.fillRect(9, -32, 5, 11);
+    canvasCtx.fillStyle = '#202723'; canvasCtx.fillRect(-8, -4, 6, 5); canvasCtx.fillRect(3, -4, 6, 5);
+    if (working) {
+      canvasCtx.strokeStyle = '#d89b70'; canvasCtx.lineWidth = 3; canvasCtx.beginPath(); canvasCtx.moveTo(7, -27); canvasCtx.lineTo(15, -34); canvasCtx.stroke();
+      canvasCtx.fillStyle = '#d06450'; canvasCtx.fillRect(14, -38, 4, 8);
+    }
+    canvasCtx.restore();
+  }
+  function renderCanvas() {
+    if (!canvas || !canvasCtx) return;
+    const rect = canvas.getBoundingClientRect(); if (!rect.width || !rect.height) return;
+    const dpr = Math.min(2, window.devicePixelRatio || 1);
+    const width = Math.round(rect.width * dpr), height = Math.round(rect.height * dpr);
+    if (canvas.width !== width || canvas.height !== height) { canvas.width = width; canvas.height = height; }
+    canvasCtx.setTransform(dpr, 0, 0, dpr, 0, 0); canvasCtx.imageSmoothingEnabled = false;
+    const w = rect.width, h = rect.height; drawBackdrop(w, h);
+    const completed = state.murals.slice(-12);
+    completed.forEach((mural, i) => paintMural(mural, i, w, h));
+    state.jobs.forEach((job, i) => {
+      if (!job) return;
+      const pct = Math.max(0, Math.min(1, (Date.now() - job.started) / job.duration));
+      const muralIndex = completed.length + i;
+      paintMural(job, muralIndex, w, h, pct);
+    });
+    const active = state.jobs.map((job, i) => job ? i : -1).filter(i => i >= 0);
+    const artistCount = Math.max(1, state.artists);
+    for (let i = 0; i < artistCount; i++) {
+      const x = w * ((i + 1) / (artistCount + 1));
+      const working = active.includes(i);
+      drawArtist(x, h * .87, Math.max(.72, Math.min(1.05, w / 650)), i, working);
+    }
+    // Subtle brick seams keep the wall tactile without obscuring artwork.
+    canvasCtx.globalAlpha = .12; canvasCtx.strokeStyle = '#101614'; canvasCtx.lineWidth = 1;
+    for (let y = 0; y < h * .84; y += 17) { canvasCtx.beginPath(); canvasCtx.moveTo(0, y); canvasCtx.lineTo(w, y); canvasCtx.stroke(); }
+    canvasCtx.globalAlpha = 1;
+  }
+  function deliverSupply() {
+    if (inventoryCount() >= MAX_TOOLS) { state.nextSupplyAt = Date.now() + 4000; return; }
+    const empty = state.items.indexOf(0);
+    if (empty >= 0) {
+      const maxLevel = Math.min(6, Math.floor((state.drawings + state.supply - 1) / 5) + 1);
+      state.items[empty] = Math.max(1, Math.min(maxLevel, 1 + Math.floor(Math.random() * Math.min(3, maxLevel))));
+      notify(t().toolAdded);
+    }
+    state.nextSupplyAt = Date.now() + Math.max(6000, 18000 - (state.supply - 1) * 2200);
+    save(); render();
+  }
+  function updateTimers(now) {
+    const time = Date.now(); let changed = false;
+    state.jobs.forEach((job, i) => {
+      if (!job || time - job.started < job.duration) return;
+      // Remove the job before granting its reward: a saved completion can never pay twice.
+      state.jobs[i] = null;
+      state.murals.push({ word: job.word, color: job.color, seed: job.seed });
+      state.murals = state.murals.slice(-12); state.drawings++;
+      state.coins += REWARD; changed = true;
+      notify(t().completed);
+    });
+    if (time >= state.nextSupplyAt) { deliverSupply(); changed = false; }
+    if (changed) { save(); render(); }
+    const left = Math.max(0, state.nextSupplyAt - time);
+    $('supply-countdown').textContent = `${t().in} ${Math.ceil(left / 1000)} ${t().seconds}`;
+    $('supply-title').textContent = t().supply;
+    const period = Math.max(6000, 18000 - (state.supply - 1) * 2200);
+    $('supply-fill').style.width = `${Math.max(0, Math.min(100, 100 * (1 - left / period)))}%`;
+    renderProgress();
+    if (now - lastFrame >= 80) { renderCanvas(); lastFrame = now; }
+  }
+  function animationFrame(now) { updateTimers(now); requestAnimationFrame(animationFrame); }
+  function openUpgrades() { overlay.classList.add('open'); overlay.setAttribute('aria-hidden', 'false'); $('close-upgrades').focus(); }
+  function closeUpgrades() { overlay.classList.remove('open'); overlay.setAttribute('aria-hidden', 'true'); $('open-upgrades').focus(); }
+  function clearProgress() {
+    if (!window.confirm(t().confirmClear)) return;
+    const language = state.language;
+    state = freshState(); state.language = language;
+    selectedTool = -1;
+    save(); render(); renderCanvas(); closeUpgrades(); notify(t().cleared);
+  }
+  function init() {
+    $('open-upgrades').addEventListener('click', openUpgrades);
+    $('close-upgrades').addEventListener('click', closeUpgrades);
+    $('clear-progress').addEventListener('click', clearProgress);
+    overlay.addEventListener('click', event => { if (event.target === overlay) closeUpgrades(); });
+    document.addEventListener('keydown', event => { if (event.key === 'Escape' && overlay.classList.contains('open')) closeUpgrades(); });
+    $('language').addEventListener('click', () => { state.language = state.language === 'ru' ? 'en' : 'ru'; save(); render(); });
+    window.addEventListener('resize', renderCanvas);
+    window.addEventListener('beforeunload', save);
+    $('save-status').textContent = t().save;
+    render(); renderCanvas(); requestAnimationFrame(animationFrame);
+    setInterval(save, 15000);
+  }
+  init();
 })();

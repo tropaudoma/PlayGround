@@ -1,55 +1,68 @@
 <!doctype html>
 <html lang="ru">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" />
-  <meta name="theme-color" content="#242722" />
-  <link rel="icon" href="favicon.svg" type="image/svg+xml" />
-  <title>Граффити-мастерская — Уличная империя</title>
-  <link rel="stylesheet" href="style.css" />
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#111313">
+  <title>Граффити-мастерская · Уличная империя</title>
+  <link rel="icon" href="favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="style.css">
 </head>
 <body>
   <main class="game-shell">
     <header class="topbar">
-      <a class="brand" href="#" aria-label="Graffiti Merge"><span class="brand-mark">GM</span><span><b>ГРАФФИТИ</b><small>УЛИЧНАЯ ИМПЕРИЯ</small></span></a>
-      <div class="top-meta"><div class="coin-pill"><span class="coin-icon">¢</span><strong id="coins">0</strong><small id="coins-label">МОНЕТЫ</small></div><button class="upgrade-open" id="open-upgrades" type="button">✦ <span id="upgrade-button-label">УЛУЧШЕНИЯ</span></button><button class="lang-button" id="language" aria-label="Сменить язык">RU <span>⌄</span></button></div>
+      <a class="brand" href="#" aria-label="Graffiti Workshop">
+        <span class="brand-mark">G<span>W</span></span>
+        <span class="brand-copy"><b>ГРАФФИТИ</b><small>УЛИЧНАЯ МАСТЕРСКАЯ</small></span>
+      </a>
+      <div class="top-actions">
+        <div class="coin-pill" aria-label="Баланс"><span class="coin-icon">¢</span><strong id="coins">35</strong><small id="coins-label">МОНЕТЫ</small></div>
+        <button class="button button-secondary" id="open-upgrades" type="button"><span aria-hidden="true">✳</span> <span id="upgrade-label">УЛУЧШЕНИЯ</span></button>
+        <button class="language-button" id="language" type="button" aria-label="Switch language">RU</button>
+      </div>
     </header>
 
-    <section class="workshop-card">
-      <div class="scene-heading"><div><span class="eyebrow" id="loc-eyebrow">РАЙОН №01 · УРОВЕНЬ 1</span><h1 id="location-name">Старый двор</h1></div><div class="wall-badge"><img class="wall-icon" src="assets/pixel/tool-3.png" alt=""> <b id="wall-label">СТЕНА 1</b></div></div>
-      <div class="scene-wrap">
-        <canvas id="scene" aria-label="Художники рисуют граффити на кирпичной стене"></canvas>
-        <div class="scene-caption"><span class="live-dot"></span><span id="scene-status">МАСТЕРА ЗА РАБОТОЙ</span><span class="scene-level" id="scene-level">✦ 1</span></div>
-      </div>
-      <div class="art-progress" aria-live="polite">
-        <div class="art-progress-head"><b id="progress-stage">НАЧАЛО</b><span id="progress-percent">0%</span></div>
-        <div class="art-progress-track" id="progress-track" role="progressbar" aria-label="Прогресс рисунка" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0"><i id="progress-fill"></i></div>
-      </div>
-      <div class="artist-strip"><div class="artist-summary"><span class="artist-icon" aria-hidden="true"></span><b><span id="artist-count">1</span> <span id="artist-word">художник</span></b><small id="artist-subtitle">Работают над новыми шедеврами</small></div><div class="artist-slots" id="artist-slots" aria-label="Слоты художников"></div><div class="earnings"><span>ЗА РИСУНОК</span><b>+<span id="earn-range">15</span> <i>¢</i></b></div></div>
-    </section>
-
-    <div class="content-grid">
-      <section class="board-card panel">
-        <div class="section-head"><div><span class="eyebrow">СОБИРАЙ И ОБЪЕДИНЯЙ</span><h2 id="board-title">Стол с красками</h2></div><div class="board-capacity"><b id="occupied">0</b><span>/</span><span id="capacity">16</span><span class="capacity-icon">▦</span></div></div>
-        <p class="hint" id="board-hint">Перетащи одинаковые предметы друг на друга — или коснись двух по очереди.</p>
-        <div class="board-frame"><div class="merge-board" id="board" role="grid" aria-label="Поле объединения"></div></div>
-        <div class="spawn-row"><span class="spawn-icon">✳</span><div class="spawn-copy"><b id="spawn-label">Новые материалы</b><small id="spawn-in">Следующая поставка через 24 сек.</small></div><div class="spawn-meter"><i id="spawn-progress"></i></div></div>
-        <div class="item-legend" id="item-legend"></div>
+    <div class="game-layout">
+      <section class="workshop" aria-labelledby="district-name">
+        <div class="workshop-heading">
+          <div><p class="eyebrow" id="district-label">РАБОЧАЯ ЗОНА · 01</p><h1 id="district-name">Старая промзона</h1></div>
+          <div class="wall-level"><span class="level-dot"></span><span id="wall-label">СТЕНА 1</span></div>
+        </div>
+        <div class="wall-frame">
+          <canvas id="wall" aria-label="Большая кирпичная стена с художниками и растущими граффити"></canvas>
+          <div class="wall-hud"><span class="live-indicator"></span><span id="wall-status">СТЕНА ОЖИВАЕТ</span><span class="hud-divider"></span><span id="active-count">0 МАСТЕРОВ</span></div>
+          <div class="reward-stamp"><span>НАГРАДА</span><b>+15 <i>¢</i></b><small>ЗА РИСУНОК</small></div>
+        </div>
+        <div class="wall-footer"><span id="wall-tip">Выбери инструмент и назначь мастера на стену.</span><span class="wall-caption"><i></i> WORK IN PROGRESS</span></div>
+        <div class="artist-progress" id="artist-progress" aria-live="polite"></div>
       </section>
 
-      <aside class="side-column">
-        <section class="panel goals-panel"><div class="section-head"><div><span class="eyebrow">СЛЕДУЮЩАЯ ЦЕЛЬ</span><h2 id="goal-title">Новая стена</h2></div><span class="goal-icon">▤</span></div><div class="goal-progress"><div class="goal-track"><i id="goal-progress"></i></div><span id="goal-percent">0%</span></div><div class="goal-copy"><b id="goal-main">Улучши стену до 3 уровня</b><small id="goal-sub">Откроется станция под мостом</small></div></section>
-        <section class="panel collection-panel"><div class="collection-head"><div><span class="eyebrow" id="collection-eyebrow">ТВОЯ КОЛЛЕКЦИЯ</span><h2 id="collection-title">Инструменты</h2></div><span class="collection-count" id="collection-count">1 / 6</span></div><div class="collection-items" id="collection-items"></div></section>
+      <aside class="control-deck">
+        <section class="deck-section crew-section">
+          <div class="section-heading"><div><p class="eyebrow" id="crew-kicker">ТВОЯ КОМАНДА</p><h2 id="crew-title">Мастера</h2></div><span class="count-badge"><b id="artist-count">1</b><span id="crew-unit">МАСТЕР</span></span></div>
+          <p class="section-note" id="crew-note">Нажми на инструмент, затем на свободного мастера.</p>
+          <div class="crew-list" id="crew-list"></div>
+        </section>
+        <section class="deck-section supplies-section">
+          <div class="section-heading supplies-heading"><div><p class="eyebrow" id="supplies-kicker">ИНВЕНТАРЬ</p><h2 id="supplies-title">Краски и инструменты</h2></div><span class="count-badge"><b id="inventory-count">0</b><span id="inventory-cap">/ 12</span></span></div>
+          <p class="section-note" id="merge-note">Выбери два одинаковых инструмента, чтобы объединить их.</p>
+          <div class="inventory-grid" id="inventory-grid" role="group" aria-label="Инструменты"></div>
+          <div class="supply-footer"><div class="supply-timer"><span class="timer-mark">↻</span><span><b id="supply-title">НОВАЯ ПОСТАВКА</b><small id="supply-countdown">через 10 сек.</small></span></div><div class="supply-track"><i id="supply-fill"></i></div></div>
+        </section>
+        <button class="hire-prompt" id="hire-quick" type="button"><span class="hire-icon">+</span><span><b id="hire-title">Расширить команду</b><small id="hire-description">Нанять ещё одного мастера</small></span><strong><span id="hire-cost">75</span> ¢ <i>↗</i></strong></button>
+        <footer class="deck-footer"><span id="save-status">АВТОСОХРАНЕНИЕ ВКЛЮЧЕНО</span><span><i class="save-dot"></i><span id="save-indicator">СОХРАНЕНО</span></span></footer>
       </aside>
     </div>
-    <footer><span>✦ <b>ТВОЙ ДВОР — ТВОИ ПРАВИЛА</b></span><span id="save-status">Игра сохраняется автоматически</span></footer>
+
     <section class="upgrade-overlay" id="upgrade-overlay" aria-hidden="true">
       <div class="upgrade-window" role="dialog" aria-modal="true" aria-labelledby="upgrade-title">
-        <div class="upgrade-window-head"><div><span class="eyebrow" id="upgrade-kicker">РАСТИ И ПРОЦВЕТАЙ</span><h2 id="upgrade-title">Мастерская</h2></div><button class="upgrade-close" id="close-upgrades" type="button" aria-label="Закрыть">×</button></div>
-        <div id="upgrades" class="upgrade-list"></div>
+        <div class="modal-heading"><div><p class="eyebrow" id="upgrade-kicker">РАЗВИВАЙ МАСТЕРСКУЮ</p><h2 id="upgrade-title">Улучшения</h2></div><button class="close-button" id="close-upgrades" type="button" aria-label="Закрыть">×</button></div>
+        <div class="upgrade-list" id="upgrade-list"></div>
+        <p class="modal-footnote" id="upgrade-footnote">Каждый готовый мурал приносит ровно 15 монет.</p>
+        <button class="clear-progress" id="clear-progress" type="button">Сбросить прогресс</button>
       </div>
     </section>
-    <div class="toast" id="toast" role="status"></div>
+    <div class="toast" id="toast" role="status" aria-live="polite"></div>
   </main>
   <script src="game.js"></script>
 </body>
