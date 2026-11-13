@@ -38,7 +38,7 @@ button, .board-cell { -webkit-tap-highlight-color: transparent; }
 .game-shell {
   width: 100%; height: 100vh; height: 100dvh; max-width: 1440px;
   margin: 0 auto; padding: 10px 18px 8px;
-  display: grid; grid-template-rows: 48px minmax(205px,.84fr) minmax(300px,1.2fr) 20px;
+  display: grid; grid-template-rows: 48px minmax(270px,1.15fr) minmax(300px,.85fr) 20px;
   gap: 10px; overflow: hidden; background: var(--ink);
 }
 .topbar { display:flex; align-items:center; justify-content:space-between; min-width:0; }
@@ -101,6 +101,12 @@ button, .board-cell { -webkit-tap-highlight-color: transparent; }
 }
 .live-dot { width:7px; height:7px; background:#a7ad6e; box-shadow:2px 0 #737b4c, 0 2px #737b4c; }
 .scene-level { margin-left:8px; color:#f0cb65; }
+.art-progress { flex:0 0 34px; display:grid; grid-template-rows:14px 8px; align-content:center; gap:4px; padding:0 2px 3px; }
+.art-progress-head { display:flex; align-items:center; justify-content:space-between; color:#d5c59f; font-size:10px; line-height:1; letter-spacing:.7px; }
+.art-progress-head b { color:#e8c66c; }
+.art-progress-head span { color:#f0e2bf; font-variant-numeric:tabular-nums; }
+.art-progress-track { height:8px; overflow:hidden; background:#26231e; border:1px solid #806b4e; box-shadow:inset 1px 1px 0 #171411; }
+.art-progress-track i { display:block; width:0; height:100%; background:#d8aa50; box-shadow:inset 0 1px #f4d77e; transition:width .18s steps(8,end); }
 .artist-strip { height:42px; flex:0 0 42px; display:flex; align-items:center; justify-content:space-between; }
 .artist-summary { display:grid; grid-template-columns:30px auto; grid-template-rows:17px 13px; align-items:center; }
 .artist-icon { grid-row:1/3; width:25px; height:25px; display:grid; place-items:center; background-color:#435143; border:2px solid #829064; color:transparent; font-size:0; }
@@ -203,7 +209,7 @@ footer b { color:#e3d2ad; }
 .artist-slot:focus-visible, .upgrade-open:focus-visible, .lang-button:focus-visible, .buy-button:focus-visible, .upgrade-close:focus-visible { outline:3px solid #f4d678; outline-offset:2px; }
 
 @media (max-width:760px) {
-  .game-shell { padding:7px 8px; grid-template-rows:40px minmax(170px,.68fr) minmax(0,1.32fr); gap:7px; }
+  .game-shell { padding:7px 8px; grid-template-rows:40px minmax(245px,.8fr) minmax(0,1.2fr); gap:7px; }
   .top-meta { gap:6px; }
   .brand { gap:7px; }
   .brand-mark { width:33px; height:33px; font-size:13px; }
@@ -220,6 +226,9 @@ footer b { color:#e3d2ad; }
   .scene-heading h1 { margin:2px 0 5px; font-size:18px; }
   .scene-wrap { min-height:72px; border-width:3px; }
   .scene-caption { left:5px; bottom:5px; padding:3px 5px; font-size:9px; }
+  .art-progress { flex-basis:32px; grid-template-rows:13px 7px; gap:3px; padding-bottom:2px; }
+  .art-progress-head { font-size:9px; }
+  .art-progress-track { height:7px; }
   .artist-strip { height:48px; flex-basis:48px; gap:3px; }
   .artist-summary { flex:0 0 90px; grid-template-columns:26px auto; grid-template-rows:14px 11px; }
   .artist-icon { width:22px; height:22px; }
@@ -259,7 +268,7 @@ footer b { color:#e3d2ad; }
   .buy-button { min-width:53px; padding:4px; font-size:10px; }
 }
 @media (max-width:390px) {
-  .game-shell { grid-template-rows:37px minmax(158px,.65fr) minmax(0,1.35fr); gap:5px; padding:5px; }
+  .game-shell { grid-template-rows:37px minmax(230px,.8fr) minmax(0,1.2fr); gap:5px; padding:5px; }
   .brand b { font-size:12px; }
   .brand-mark { width:30px; height:30px; }
   .top-meta { gap:4px; }
