@@ -5,7 +5,11 @@
   const MAX_TOOLS = 12;
   const MAX_ARTISTS = 6;
   const REWARD = 15;
-  const rewardForLevel = level => REWARD + (Math.min(5, Math.max(1, Number(level) || 1)) - 1) * 2;
+  const rewardForReputation = reputation => REWARD + Math.max(0, Math.floor((Math.max(1, Number(reputation) || 1) - 1) / 2));
+  const ARTIST_STAT_MAX = 10;
+  const newArtist = () => ({ level: 1, xp: 0, speed: 1, skill: 1, reputation: 1, specialization: null });
+  const xpForNext = level => 100 + Math.max(0, level - 1) * 60;
+  const artistUpgradeCost = (stat, value) => Math.round(({ speed: 22, skill: 28, reputation: 32 }[stat] || 25) * Math.pow(1.62, value - 1));
   const toolNames = { ru: ['Карандаш', 'Скетч-маркер', 'Краска-маркер', 'Баллончик', 'Профи-спрей', 'Арт-кейс'], en: ['Pencil', 'Sketch marker', 'Paint marker', 'Spray can', 'Pro spray', 'Art case'] };
   const toolColors = ['#d58c45', '#50879a', '#d06450', '#7b9b57', '#d0a741', '#a56b9a'];
   const pixelAssets = { alley: new Image(), sprites: new Image() };
@@ -16,12 +20,17 @@
   const artStyles = ['wildstyle', 'throwup', 'chrome', 'bubble', 'hardcore'];
   const styleLabels = { ru: { wildstyle: 'Wildstyle', throwup: 'Throw-up', chrome: 'Хром', bubble: 'Bubble', hardcore: 'Hardcore', random: 'Случайный' }, en: { wildstyle: 'Wildstyle', throwup: 'Throw-up', chrome: 'Chrome', bubble: 'Bubble', hardcore: 'Hardcore', random: 'Random' } };
   const names = { ru: ['Лиса', 'Шум', 'Клякс', 'Рэй', 'Искра', 'Мико'], en: ['Fox', 'Noise', 'Splat', 'Ray', 'Spark', 'Miko'] };
+  const artistText = {
+    ru: { title: 'РАЗВИТИЕ ХУДОЖНИКОВ', level: 'Уровень', xp: 'Опыт', speed: 'Скорость', skill: 'Навык', reputation: 'Репутация', speedEffect: '−8% времени за уровень', skillEffect: '+4% выразительности за уровень', reputationEffect: '+1 ¢ к награде за 2 уровня', upgrade: 'Прокачать', specialize: 'ВЫБЕРИ СПЕЦИАЛИЗАЦИЮ', wildstyle: 'WILDSTYLE', throwup: 'THROW-UP', threeD: '3D MASTER', color: 'COLOR MASTER', chosen: 'Специализация', queued: 'В очереди', queueNote: 'Работы выполняются по одной; художники ждут своей очереди.', xpGain: 'Опыт за мурал', levelUp: 'Новый уровень!', max: 'МАКС.', chooseArtist: 'Выбери художника', next: 'до следующего уровня', portrait: 'ХУДОЖНИК', locked: 'Откроется на уровне 10', specTaken: 'Выбрать специализацию можно только один раз.', baseReward: 'Базовая награда за мурал — 15 монет.', speedLabel: 'Скорость', skillLabel: 'Навык', reputationLabel: 'Репутация', emptyXP: 'Уровень повышен — опыт обнулён.', chooseSpec: 'Выбрать', reputationReward: 'Награда за мурал', specialtyEffect: 'Стиль рисунка меняется по специализации.', upgradeDone: 'Улучшено: {stat} · {value}', specializationChosen: 'Специализация выбрана:' },
+    en: { title: 'ARTIST DEVELOPMENT', level: 'Level', xp: 'XP', speed: 'Speed', skill: 'Skill', reputation: 'Reputation', speedEffect: '−8% time per level', skillEffect: '+4% art detail per level', reputationEffect: '+1 ¢ reward every 2 levels', upgrade: 'Upgrade', specialize: 'CHOOSE A SPECIALIZATION', wildstyle: 'WILDSTYLE', throwup: 'THROW-UP', threeD: '3D MASTER', color: 'COLOR MASTER', chosen: 'Specialization', queued: 'Queued', queueNote: 'Artists work on one wall at a time, in order.', xpGain: 'XP per artwork', levelUp: 'Level up!', max: 'MAX', chooseArtist: 'Choose an artist', next: 'to next level', portrait: 'ARTIST', locked: 'Unlocks at level 10', specTaken: 'Specialization can only be chosen once.', baseReward: 'Base reward per artwork is 15 coins.', speedLabel: 'Speed', skillLabel: 'Skill', reputationLabel: 'Reputation', emptyXP: 'Level reached — XP reset.', chooseSpec: 'Choose', reputationReward: 'Reward per artwork', specialtyEffect: 'Specialization changes the artwork style.', upgradeDone: 'Upgraded: {stat} · {value}', specializationChosen: 'Specialization chosen:' }
+  };
+  const specializationNames = { wildstyle: 'WILDSTYLE', throwup: 'THROW-UP', '3d': '3D MASTER', color: 'COLOR MASTER' };
   const words = { ru: ['ЖАР', 'ШУМ', 'МИР', 'БИТ', 'СЛЕД', 'ИСКРА', 'ДВОР', 'РИТМ', 'ВОЛЯ', 'СВЕТ', 'КОТ', 'ДРАЙВ'], en: ['HEAT', 'NOISE', 'PEACE', 'BEAT', 'TRACE', 'SPARK', 'YARD', 'RHYTHM', 'SOUL', 'GLOW', 'CREW', 'VIBE'] };
   const tr = {
-    ru: { district: 'РАБОЧАЯ ЗОНА ·', place: 'Старая промзона', wall: 'СТЕНА', coins: 'МОНЕТЫ', upgrades: 'УЛУЧШЕНИЯ', crewKick: 'ТВОЯ КОМАНДА', crew: 'Мастера', crewNote: 'Выбери инструмент, затем мастера, чтобы начать рисунок.', master: 'МАСТЕР', masters: 'МАСТЕРА', supplies: 'Краски и инструменты', inventory: 'ИНВЕНТАРЬ', merge: 'Выбери два одинаковых инструмента, чтобы объединить их.', tip: 'Выбери инструмент и назначь мастера на стену.', alive: 'СТЕНА ОЖИВАЕТ', painting: 'МАСТЕРА РИСУЮТ', idle: 'ЖДУТ МАТЕРИАЛЫ', waiting: 'СВОБОДЕН', busy: 'РИСУЕТ', finished: 'ГОТОВО', supply: 'НОВАЯ ПОСТАВКА', in: 'через', seconds: 'сек.', save: 'АВТОСОХРАНЕНИЕ ВКЛЮЧЕНО', saved: 'СОХРАНЕНО', hire: 'Расширить команду', hireDescription: 'Нанять ещё одного мастера', reward: 'НАГРАДА', each: 'ЗА РИСУНОК', upgradesTitle: 'Улучшения', kicker: 'РАЗВИВАЙ МАСТЕРСКУЮ', foot: 'Награда за готовый мурал зависит от уровня инструмента: 15–23 монеты.', speed: 'Быстрая рука', speedDesc: 'Мастера рисуют быстрее.', delivery: 'Частые поставки', deliveryDesc: 'Инструменты появляются чаще.', hireUpgrade: 'Новый мастер', hireDesc: 'Добавить мастера в команду.', max: 'МАКС.', buy: 'УЛУЧШИТЬ', clear: 'Сбросить прогресс', confirmClear: 'Удалить весь прогресс мастерской? Это действие нельзя отменить.', cleared: 'Прогресс сброшен.', needCoins: 'Не хватает монет.', mergeOk: 'Инструменты объединены!', maxTool: 'Инструмент уже максимального уровня.', full: 'Инвентарь заполнен.', hired: 'Новый мастер в команде!', speedUp: 'Мастера стали быстрее!', supplyUp: 'Поставки ускорены!', toolAdded: 'Новый инструмент поступил!', assigned: 'Мастер приступил к работе!', completed: 'Рисунок готов · +{reward} ¢', choose: 'Сначала выбери инструмент.', unavailable: 'Этот мастер занят.', progress: 'ХОД РАБОТЫ', level: 'УРОВЕНЬ', modalClose: 'Закрыть', capacity: '/ 12', working: 'РАБОТАЕТ', selectTool: 'ИНСТРУМЕНТ ВЫБРАН', selected: 'ВЫБРАНО', toolLevel: 'УРОВЕНЬ' },
-    en: { district: 'WORK ZONE ·', place: 'Old Industrial Yard', wall: 'WALL', coins: 'COINS', upgrades: 'UPGRADES', crewKick: 'YOUR CREW', crew: 'Artists', crewNote: 'Choose a tool, then an artist to start a piece.', master: 'ARTIST', masters: 'ARTISTS', supplies: 'Paint & tools', inventory: 'INVENTORY', merge: 'Select two matching tools to merge them.', tip: 'Choose a tool and assign an artist to the wall.', alive: 'WALL IN PROGRESS', painting: 'ARTISTS AT WORK', idle: 'WAITING FOR SUPPLIES', waiting: 'AVAILABLE', busy: 'PAINTING', finished: 'DONE', supply: 'NEXT SUPPLY', in: 'in', seconds: 'sec.', save: 'AUTOSAVE ENABLED', saved: 'SAVED', hire: 'Expand the crew', hireDescription: 'Hire another artist', reward: 'REWARD', each: 'PER ARTWORK', upgradesTitle: 'Upgrades', kicker: 'GROW YOUR WORKSHOP', foot: 'Rewards for finished murals scale with tool level: 15–23 coins.', speed: 'Quick hands', speedDesc: 'Artists finish their paintings faster.', delivery: 'Frequent drops', deliveryDesc: 'Tools arrive more often.', hireUpgrade: 'New artist', hireDesc: 'Add an artist to your crew.', max: 'MAX', buy: 'UPGRADE', clear: 'Reset progress', confirmClear: 'Delete all workshop progress? This cannot be undone.', cleared: 'Progress reset.', needCoins: 'Not enough coins.', mergeOk: 'Tools merged!', maxTool: 'That tool is already at max level.', full: 'Inventory is full.', hired: 'A new artist joined the crew!', speedUp: 'Artists are working faster!', supplyUp: 'Supplies arrive faster!', toolAdded: 'Fresh tool delivered!', assigned: 'Artist started painting!', completed: 'Artwork finished · +{reward} ¢', choose: 'Choose a tool first.', unavailable: 'This artist is busy.', progress: 'ART PROGRESS', level: 'LEVEL', modalClose: 'Close', capacity: '/ 12', working: 'WORKING', selectTool: 'TOOL SELECTED', selected: 'SELECTED', toolLevel: 'LEVEL' }
+    ru: { district: 'РАБОЧАЯ ЗОНА ·', place: 'Старая промзона', wall: 'СТЕНА', coins: 'МОНЕТЫ', upgrades: 'УЛУЧШЕНИЯ', crewKick: 'ТВОЯ КОМАНДА', crew: 'Мастера', crewNote: 'Выбери инструмент, затем мастера, чтобы начать рисунок.', master: 'МАСТЕР', masters: 'МАСТЕРА', supplies: 'Краски и инструменты', inventory: 'ИНВЕНТАРЬ', merge: 'Выбери два одинаковых инструмента, чтобы объединить их.', tip: 'Выбери инструмент и назначь мастера на стену.', alive: 'СТЕНА ОЖИВАЕТ', painting: 'МАСТЕРА РИСУЮТ', idle: 'ЖДУТ МАТЕРИАЛЫ', waiting: 'СВОБОДЕН', busy: 'РИСУЕТ', finished: 'ГОТОВО', supply: 'НОВАЯ ПОСТАВКА', in: 'через', seconds: 'сек.', save: 'АВТОСОХРАНЕНИЕ ВКЛЮЧЕНО', saved: 'СОХРАНЕНО', hire: 'Расширить команду', hireDescription: 'Нанять ещё одного мастера', reward: 'НАГРАДА', each: 'ЗА РИСУНОК', upgradesTitle: 'Улучшения', kicker: 'РАЗВИВАЙ МАСТЕРСКУЮ', foot: 'Базовая награда за мурал — 15 монет; репутация добавляет бонус.', speed: 'Быстрая рука', speedDesc: 'Мастера рисуют быстрее.', delivery: 'Частые поставки', deliveryDesc: 'Инструменты появляются чаще.', hireUpgrade: 'Новый мастер', hireDesc: 'Добавить мастера в команду.', max: 'МАКС.', buy: 'УЛУЧШИТЬ', clear: 'Сбросить прогресс', confirmClear: 'Удалить весь прогресс мастерской? Это действие нельзя отменить.', cleared: 'Прогресс сброшен.', needCoins: 'Не хватает монет.', mergeOk: 'Инструменты объединены!', maxTool: 'Инструмент уже максимального уровня.', full: 'Инвентарь заполнен.', hired: 'Новый мастер в команде!', speedUp: 'Мастера стали быстрее!', supplyUp: 'Поставки ускорены!', toolAdded: 'Новый инструмент поступил!', assigned: 'Мастер приступил к работе!', completed: 'Рисунок готов · +{reward} ¢', choose: 'Сначала выбери инструмент.', unavailable: 'Этот мастер занят.', progress: 'ХОД РАБОТЫ', level: 'УРОВЕНЬ', modalClose: 'Закрыть', capacity: '/ 12', working: 'РАБОТАЕТ', selectTool: 'ИНСТРУМЕНТ ВЫБРАН', selected: 'ВЫБРАНО', toolLevel: 'УРОВЕНЬ', artists: 'ХУДОЖНИКИ', queuedNotice: 'Художник добавлен в очередь.', queued: 'В ОЧЕРЕДИ', management: 'Художники', managementKicker: 'КОМАНДА И ПРОГРЕСС', chooseArtist: 'Выбери художника', xp: 'ОПЫТ', upgradeArtist: 'УЛУЧШИТЬ', specializeAt: 'СПЕЦИАЛИЗАЦИЯ · УРОВЕНЬ 10', specWildstyle: 'Дикий стиль: резкие стрелы и линии.', specThrowup: 'Throw-up: округлые, жирные буквы.', spec3d: '3D Master: хром и объёмная экструзия.', specColor: 'Color Master: яркая палитра и заливки.', levelUp: 'Получен новый уровень!', xpPerArtwork: '+60 опыта за мурал', selectedSpec: 'ВЫБРАНО', nextLevel: 'до следующего уровня' },
+    en: { district: 'WORK ZONE ·', place: 'Old Industrial Yard', wall: 'WALL', coins: 'COINS', upgrades: 'UPGRADES', crewKick: 'YOUR CREW', crew: 'Artists', crewNote: 'Choose a tool, then an artist to start a piece.', master: 'ARTIST', masters: 'ARTISTS', supplies: 'Paint & tools', inventory: 'INVENTORY', merge: 'Select two matching tools to merge them.', tip: 'Choose a tool and assign an artist to the wall.', alive: 'WALL IN PROGRESS', painting: 'ARTISTS AT WORK', idle: 'WAITING FOR SUPPLIES', waiting: 'AVAILABLE', busy: 'PAINTING', finished: 'DONE', supply: 'NEXT SUPPLY', in: 'in', seconds: 'sec.', save: 'AUTOSAVE ENABLED', saved: 'SAVED', hire: 'Expand the crew', hireDescription: 'Hire another artist', reward: 'REWARD', each: 'PER ARTWORK', upgradesTitle: 'Upgrades', kicker: 'GROW YOUR WORKSHOP', foot: 'Base reward per artwork is 15 coins; reputation adds a bonus.', speed: 'Quick hands', speedDesc: 'Artists finish their paintings faster.', delivery: 'Frequent drops', deliveryDesc: 'Tools arrive more often.', hireUpgrade: 'New artist', hireDesc: 'Add an artist to your crew.', max: 'MAX', buy: 'UPGRADE', clear: 'Reset progress', confirmClear: 'Delete all workshop progress? This cannot be undone.', cleared: 'Progress reset.', needCoins: 'Not enough coins.', mergeOk: 'Tools merged!', maxTool: 'That tool is already at max level.', full: 'Inventory is full.', hired: 'A new artist joined the crew!', speedUp: 'Artists are working faster!', supplyUp: 'Supplies arrive faster!', toolAdded: 'Fresh tool delivered!', assigned: 'Artist started painting!', completed: 'Artwork finished · +{reward} ¢', choose: 'Choose a tool first.', unavailable: 'This artist is busy.', progress: 'ART PROGRESS', level: 'LEVEL', modalClose: 'Close', capacity: '/ 12', working: 'WORKING', selectTool: 'TOOL SELECTED', selected: 'SELECTED', toolLevel: 'LEVEL', artists: 'ARTISTS', queuedNotice: 'Artist added to the queue.', queued: 'QUEUED', management: 'Artists', managementKicker: 'CREW & PROGRESSION', chooseArtist: 'Choose an artist', xp: 'XP', upgradeArtist: 'UPGRADE', specializeAt: 'SPECIALIZATION · LEVEL 10', specWildstyle: 'Wildstyle: sharp arrows and angular lines.', specThrowup: 'Throw-up: rounded, bold letters.', spec3d: '3D Master: chrome finish and deep extrusion.', specColor: 'Color Master: vivid palette and fills.', levelUp: 'Level up!', xpPerArtwork: '+60 XP per artwork', selectedSpec: 'CHOSEN', nextLevel: 'to next level' }
   };
-  const freshState = () => ({ version: 2, coins: 35, items: [1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], artists: 1, speed: 1, supply: 1, jobs: [], murals: [], drawings: 0, nextSupplyAt: Date.now() + 10000, language: 'ru', artStyle: 'wildstyle' });
+  const freshState = () => ({ version: 2, coins: 35, items: [1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], artists: 1, artistProgress: [newArtist()], speed: 1, supply: 1, jobs: [], queue: [], murals: [], drawings: 0, nextSupplyAt: Date.now() + 10000, language: 'ru', artStyle: 'wildstyle' });
   let state;
   try {
     const saved = JSON.parse(localStorage.getItem(SAVE_KEY) || 'null');
@@ -33,13 +42,34 @@
   state.speed = Math.max(1, Math.min(8, Math.floor(Number(state.speed) || 1)));
   state.supply = Math.max(1, Math.min(6, Math.floor(Number(state.supply) || 1)));
   state.items = Array.from({ length: MAX_TOOLS }, (_, i) => Math.max(0, Math.min(6, Math.floor(Number(state.items?.[i]) || 0))));
-  state.jobs = Array.from({ length: state.artists }, (_, i) => {
-    const j = state.jobs?.[i];
-    return j && Number.isFinite(j.started) && Number.isFinite(j.duration) ? { started: j.started, duration: Math.max(5000, j.duration), level: Math.max(1, Math.min(6, j.level | 0)), color: muralColors.includes(j.color) ? j.color : muralColors[i % muralColors.length], word: typeof j.word === 'string' ? j.word : words.ru[i % words.ru.length], seed: Number(j.seed) || Math.random(), style: artStyles.includes(j.style) ? j.style : 'wildstyle', wallOrder: Number.isFinite(j.wallOrder) ? Math.max(0, Math.floor(j.wallOrder)) : state.drawings + i, artist: i } : null;
+  state.artistProgress = Array.from({ length: state.artists }, (_, i) => {
+    const saved = state.artistProgress?.[i] || newArtist();
+    return { level: Math.max(1, Math.floor(Number(saved.level) || 1)), xp: Math.max(0, Number(saved.xp) || 0), speed: Math.max(1, Math.min(ARTIST_STAT_MAX, Math.floor(Number(saved.speed) || 1))), skill: Math.max(1, Math.min(ARTIST_STAT_MAX, Math.floor(Number(saved.skill) || 1))), reputation: Math.max(1, Math.min(ARTIST_STAT_MAX, Math.floor(Number(saved.reputation) || 1))), specialization: ['wildstyle', 'throwup', '3d', 'color'].includes(saved.specialization) ? saved.specialization : null };
   });
   const savedMurals = Array.isArray(state.murals) ? state.murals.slice(-12) : [];
   const firstSavedOrder = Math.max(0, state.drawings - savedMurals.length);
-  state.murals = savedMurals.map((m, i) => ({ word: typeof m.word === 'string' ? m.word : words.ru[i % 12], color: muralColors.includes(m.color) ? m.color : muralColors[i % muralColors.length], seed: Number(m.seed) || i + 1, style: artStyles.includes(m.style) ? m.style : 'wildstyle', wallOrder: Number.isFinite(m.wallOrder) ? Math.max(0, Math.floor(m.wallOrder)) : firstSavedOrder + i }));
+  state.murals = savedMurals.map((m, i) => ({ word: typeof m.word === 'string' ? m.word : words.ru[i % 12], color: muralColors.includes(m.color) ? m.color : muralColors[i % muralColors.length], seed: Number(m.seed) || i + 1, style: artStyles.includes(m.style) ? m.style : 'wildstyle', wallOrder: Number.isFinite(m.wallOrder) ? Math.max(0, Math.floor(m.wallOrder)) : firstSavedOrder + i, skill: Math.max(1, Math.min(ARTIST_STAT_MAX, Math.floor(Number(m.skill) || 1))), specialization: ['wildstyle', 'throwup', '3d', 'color'].includes(m.specialization) ? m.specialization : null }));
+  const nextPendingOrder = () => Math.max(state.drawings, ...state.murals.map(mural => mural.wallOrder + 1));
+  const normalizeJob = (j, i) => j && Number.isFinite(j.started) && Number.isFinite(j.duration) ? { started: j.started, duration: Math.max(5000, j.duration), level: Math.max(1, Math.min(6, j.level | 0)), color: muralColors.includes(j.color) ? j.color : muralColors[i % muralColors.length], word: typeof j.word === 'string' ? j.word : words.ru[i % words.ru.length], seed: Number(j.seed) || Math.random(), style: artStyles.includes(j.style) ? j.style : 'wildstyle', wallOrder: Number.isFinite(j.wallOrder) ? Math.max(0, Math.floor(j.wallOrder)) : null, artist: i, skill: Math.max(1, Math.min(ARTIST_STAT_MAX, Math.floor(Number(j.skill) || 1))), specialization: ['wildstyle', 'throwup', '3d', 'color'].includes(j.specialization) ? j.specialization : null } : null;
+  const legacyJobs = Array.from({ length: state.artists }, (_, i) => normalizeJob(state.jobs?.[i], i)).filter(Boolean).sort((a, b) => (a.wallOrder ?? Number.MAX_SAFE_INTEGER) - (b.wallOrder ?? Number.MAX_SAFE_INTEGER) || a.started - b.started || a.artist - b.artist);
+  const savedQueue = Array.isArray(state.queue) ? state.queue.map((entry, i) => ({ ...entry, artist: Math.max(0, Math.min(state.artists - 1, Math.floor(Number(entry.artist) || 0))), level: Math.max(1, Math.min(6, Math.floor(Number(entry.level) || 1))), style: artStyles.includes(entry.style) ? entry.style : 'wildstyle', color: muralColors.includes(entry.color) ? entry.color : muralColors[i % muralColors.length], word: typeof entry.word === 'string' ? entry.word : words.ru[i % words.ru.length], seed: Number(entry.seed) || Math.random(), wallOrder: Number.isFinite(entry.wallOrder) ? Math.max(0, Math.floor(entry.wallOrder)) : null, skill: Math.max(1, Math.min(ARTIST_STAT_MAX, Math.floor(Number(entry.skill) || state.artistProgress[entry.artist]?.skill || 1))), specialization: ['wildstyle', 'throwup', '3d', 'color'].includes(entry.specialization) ? entry.specialization : null })).slice(0, MAX_ARTISTS - 1) : [];
+  state.jobs = Array(state.artists).fill(null);
+  const [active, ...waiting] = legacyJobs;
+  const queuedEntries = [...waiting.map(job => ({ artist: job.artist, level: job.level, style: job.style, color: job.color, word: job.word, seed: job.seed, skill: job.skill, specialization: job.specialization, wallOrder: job.wallOrder })), ...savedQueue];
+  let wallOrder = nextPendingOrder();
+  if (active) {
+    active.wallOrder = Math.max(wallOrder, active.wallOrder ?? wallOrder);
+    wallOrder = active.wallOrder + 1;
+    state.jobs[active.artist] = active;
+  }
+  const seenArtists = new Set(active ? [active.artist] : []);
+  state.queue = queuedEntries.filter(entry => {
+    if (seenArtists.has(entry.artist) || seenArtists.size >= state.artists) return false;
+    seenArtists.add(entry.artist);
+    entry.wallOrder = Math.max(wallOrder, entry.wallOrder ?? wallOrder);
+    wallOrder = entry.wallOrder + 1;
+    return true;
+  }).slice(0, MAX_ARTISTS - 1);
   state.language = state.language === 'en' ? 'en' : 'ru';
   state.artStyle = state.artStyle === 'random' || artStyles.includes(state.artStyle) ? state.artStyle : 'wildstyle';
   let selectedTool = -1;
@@ -53,7 +83,40 @@
   const overlay = $('upgrade-overlay');
   const t = () => tr[state.language];
   const price = type => type === 'hire' ? Math.round(75 * Math.pow(1.75, state.artists - 1)) : type === 'speed' ? Math.round(55 * Math.pow(1.7, state.speed - 1)) : Math.round(60 * Math.pow(1.75, state.supply - 1));
-  const durationFor = level => Math.max(8500, 26000 / (1 + (state.speed - 1) * .28) / (1 + (level - 1) * .08));
+  const durationFor = (level, artist) => Math.max(7000, 26000 / (1 + (state.speed - 1) * .28) / (1 + (level - 1) * .08) * Math.max(.28, 1 - ((state.artistProgress[artist]?.speed || 1) - 1) * .08));
+  const activeJob = () => state.jobs.find(Boolean) || null;
+  const isArtistBusy = index => Boolean(state.jobs[index] || state.queue.some(entry => entry.artist === index));
+  function activateQueued(entry) {
+    const progress = state.artistProgress[entry.artist];
+    const job = { ...entry, started: Date.now(), duration: durationFor(entry.level, entry.artist), skill: progress.skill, specialization: progress.specialization, artist: entry.artist };
+    state.jobs[entry.artist] = job;
+    return job;
+  }
+  function activateNext() {
+    if (activeJob() || !state.queue.length) return null;
+    return activateQueued(state.queue.shift());
+  }
+  function nextWallOrder() {
+    return Math.max(state.drawings, ...state.murals.map(mural => mural.wallOrder + 1), ...state.jobs.filter(Boolean).map(job => job.wallOrder + 1), ...state.queue.map(entry => (entry.wallOrder || 0) + 1));
+  }
+  function chosenArtStyle(artist) {
+    const specialization = state.artistProgress[artist]?.specialization;
+    if (specialization === 'wildstyle' || specialization === 'throwup') return specialization;
+    if (specialization === '3d') return 'chrome';
+    if (specialization === 'color') return 'bubble';
+    return state.artStyle === 'random' ? artStyles[Math.floor(Math.random() * artStyles.length)] : state.artStyle;
+  }
+  function awardArtistXP(artist, amount) {
+    const progress = state.artistProgress[artist];
+    progress.xp += amount;
+    let levels = 0;
+    while (progress.xp >= xpForNext(progress.level)) {
+      progress.xp -= xpForNext(progress.level);
+      progress.level++;
+      levels++;
+    }
+    return levels;
+  }
   const inventoryCount = () => state.items.filter(Boolean).length;
   const fmt = n => Math.floor(n).toLocaleString(state.language === 'ru' ? 'ru-RU' : 'en-US');
   function save() {
@@ -66,13 +129,19 @@
   }
   function startJob(index, toolIndex) {
     if (!state.items[toolIndex]) return;
-    if (state.jobs[index]) { notify(t().unavailable); return; }
+    if (isArtistBusy(index)) { notify(t().unavailable); return; }
     const level = state.items[toolIndex];
+    const artist = state.artistProgress[index];
+    const entry = { level, color: muralColors[Math.floor(Math.random() * muralColors.length)], word: words[state.language][Math.floor(Math.random() * words[state.language].length)], seed: Math.random(), style: chosenArtStyle(index), wallOrder: nextWallOrder(), artist: index, skill: artist.skill, specialization: artist.specialization };
     state.items[toolIndex] = 0; selectedTool = -1;
-    const style = state.artStyle === 'random' ? artStyles[Math.floor(Math.random() * artStyles.length)] : state.artStyle;
-    const wallOrder = Math.max(state.drawings, ...state.murals.map(mural => mural.wallOrder + 1), ...state.jobs.filter(Boolean).map(job => job.wallOrder + 1));
-    state.jobs[index] = { started: Date.now(), duration: durationFor(level), level, color: muralColors[Math.floor(Math.random() * muralColors.length)], word: words[state.language][Math.floor(Math.random() * words[state.language].length)], seed: Math.random(), style, wallOrder, artist: index };
-    notify(t().assigned); save(); render();
+    if (activeJob()) {
+      state.queue.push(entry);
+      notify(t().queuedNotice);
+    } else {
+      activateQueued(entry);
+      notify(t().assigned);
+    }
+    save(); render();
   }
   function mergeTools(from, to) {
     if (from === to || !state.items[from] || !state.items[to]) return false;
@@ -87,7 +156,11 @@
     $('coins').textContent = fmt(state.coins); $('coins-label').textContent = trn.coins;
     $('district-label').textContent = `${trn.district} 01`; $('district-name').textContent = trn.place;
     $('wall-label').textContent = `${trn.wall} ${Math.min(6, 1 + Math.floor(state.drawings / 5))}`;
-    $('upgrade-label').textContent = trn.upgrades; $('crew-kicker').textContent = trn.crewKick;
+    $('upgrade-label').textContent = trn.upgrades; $('artist-management-label').textContent = artistText[lang].title; $('crew-kicker').textContent = trn.crewKick;
+    $('artist-modal-kicker').textContent = trn.managementKicker; $('artist-modal-title').textContent = artistText[lang].title;
+    $('artist-modal-note').textContent = artistText[lang].queueNote; $('artist-list').setAttribute('aria-label', trn.management);
+    $('close-artists').setAttribute('aria-label', trn.modalClose); $('close-upgrades').setAttribute('aria-label', trn.modalClose);
+    $('reward-label').textContent = trn.reward; $('reward-value').textContent = `+15–${rewardForReputation(ARTIST_STAT_MAX)}`; $('reward-each').textContent = trn.each;
     $('crew-title').textContent = trn.crew; $('crew-note').textContent = trn.crewNote;
     $('crew-unit').textContent = state.artists === 1 ? trn.master : trn.masters;
     $('supplies-kicker').textContent = trn.inventory; $('supplies-title').textContent = trn.supplies;
@@ -111,7 +184,7 @@
     $('language').textContent = lang.toUpperCase(); $('language').setAttribute('aria-label', lang === 'ru' ? 'Switch language' : 'Сменить язык');
     $('upgrade-kicker').textContent = trn.kicker; $('upgrade-title').textContent = trn.upgradesTitle; $('upgrade-footnote').textContent = trn.foot;
     $('clear-progress').textContent = trn.clear;
-    renderUpgrades(); renderProgress();
+    renderUpgrades(); renderProgress(); renderArtists();
   }
   function renderUpgrades() {
     const options = [
@@ -126,12 +199,62 @@
     const jobs = state.jobs.map((job, i) => job ? { job, i } : null).filter(Boolean);
     $('artist-progress').innerHTML = jobs.length ? jobs.map(({ job, i }) => { const pct = Math.min(100, Math.floor((Date.now() - job.started) / job.duration * 100)); return `<div class="progress-card"><div class="progress-card-top"><span>${names[state.language][i]} · ${t().progress}</span><span>${pct}%</span></div><div class="progress-track"><i style="width:${pct}%"></i></div></div>`; }).join('') : `<div class="empty-progress">${t().tip}</div>`;
   }
+  function renderArtists() {
+    const text = artistText[state.language];
+    const selected = Math.max(0, Math.min(state.artists - 1, Number($('artist-list').dataset.selected) || 0));
+    $('artist-list').dataset.selected = selected;
+    $('artist-list').innerHTML = Array.from({ length: state.artists }, (_, i) => {
+      const artist = state.artistProgress[i];
+      const required = xpForNext(artist.level);
+      const pct = Math.min(100, artist.level >= 99 ? 100 : artist.xp / required * 100);
+      const isQueued = state.queue.some(entry => entry.artist === i);
+      const status = state.jobs[i] ? t().busy : isQueued ? text.queued : t().waiting;
+      return `<button type="button" class="artist-select${i === selected ? ' active' : ''}" data-manage-artist="${i}"><span class="crew-avatar" aria-hidden="true"></span><span>${names[state.language][i]}</span><small>${text.level} ${artist.level} · ${status}</small></button>`;
+    }).join('');
+    const artist = state.artistProgress[selected];
+    const required = xpForNext(artist.level);
+    const pct = Math.min(100, artist.level >= 99 ? 100 : artist.xp / required * 100);
+    const xpLabel = artist.level >= 99 ? text.max : `${fmt(artist.xp)} / ${fmt(required)} ${text.xp}`;
+    const stats = ['speed', 'skill', 'reputation'];
+    const statLabels = { speed: text.speedLabel, skill: text.skillLabel, reputation: text.reputationLabel };
+    const effects = { speed: text.speedEffect, skill: `${text.skillEffect} · ${Math.round((1 + (artist.skill - 1) * .04) * 100)}%`, reputation: text.reputationEffect };
+    const statHTML = stats.map(stat => {
+      const value = artist[stat], cost = artistUpgradeCost(stat, value);
+      return `<div class="artist-stat"><span class="artist-stat-icon">${stat === 'speed' ? '↯' : stat === 'skill' ? '✳' : '★'}</span><span class="artist-stat-copy"><b>${statLabels[stat]} · ${value}/${ARTIST_STAT_MAX}</b><small>${effects[stat]}</small></span><button type="button" class="buy-button" data-artist-upgrade="${stat}" ${value >= ARTIST_STAT_MAX || state.coins < cost ? 'disabled' : ''}>${value >= ARTIST_STAT_MAX ? text.max : `${text.upgrade}<span>¢ ${fmt(cost)}</span>`}</button></div>`;
+    }).join('');
+    const spec = artist.specialization;
+    const specialty = spec ? `<div class="artist-specialty"><b>${text.chosen}: ${specializationNames[spec]}</b><small>${text.specialtyEffect}</small></div>` : artist.level >= 10 ? `<div class="specialization-picker"><b>${text.specialize}</b><div>${Object.entries(specializationNames).map(([id, label]) => `<button type="button" data-specialization="${id}">${label}</button>`).join('')}</div></div>` : `<div class="artist-specialty locked"><b>${text.locked}</b><small>${text.specialtyEffect}</small></div>`;
+    $('artist-detail').innerHTML = `<div class="artist-detail-head"><div><p class="eyebrow">${text.portrait}</p><h3>${names[state.language][selected]}</h3></div><b>${text.level} ${artist.level}</b></div><div class="artist-xp"><div><span>${text.xp}</span><b>${xpLabel}</b></div><i><span style="width:${pct}%"></span></i></div><p class="artist-reward">${text.reputationReward}: <b>¢ ${rewardForReputation(artist.reputation)}</b> <small>(${text.baseReward})</small></p><div class="artist-stats">${statHTML}</div>${specialty}`;
+    $('artist-list').querySelectorAll('[data-manage-artist]').forEach(button => button.addEventListener('click', () => { $('artist-list').dataset.selected = button.dataset.manageArtist; renderArtists(); }));
+    $('artist-detail').querySelectorAll('[data-artist-upgrade]').forEach(button => button.addEventListener('click', () => upgradeArtist(selected, button.dataset.artistUpgrade)));
+    $('artist-detail').querySelectorAll('[data-specialization]').forEach(button => button.addEventListener('click', () => chooseSpecialization(selected, button.dataset.specialization)));
+  }
+  function upgradeArtist(index, stat) {
+    const artist = state.artistProgress[index];
+    if (!artist || !['speed', 'skill', 'reputation'].includes(stat) || artist[stat] >= ARTIST_STAT_MAX) return;
+    const cost = artistUpgradeCost(stat, artist[stat]);
+    if (state.coins < cost) { notify(t().needCoins); return; }
+    state.coins -= cost; artist[stat]++;
+    save(); render();
+    const message = artistText[state.language].upgradeDone
+      .replace('{stat}', artistText[state.language][statLabel(stat)])
+      .replace('{value}', artist[stat]);
+    notify(`${names[state.language][index]} · ${message}`);
+  }
+  function statLabel(stat) { return ({ speed: 'speedLabel', skill: 'skillLabel', reputation: 'reputationLabel' })[stat]; }
+  function chooseSpecialization(index, spec) {
+    const artist = state.artistProgress[index];
+    if (!artist || artist.level < 10 || artist.specialization || !Object.hasOwn(specializationNames, spec)) return;
+    artist.specialization = spec;
+    save(); render(); renderCanvas();
+    notify(`${artistText[state.language].specializationChosen} ${specializationNames[spec]}`);
+  }
   function purchase(type) {
     const cost = price(type);
     if (state.coins < cost) { notify(t().needCoins); return; }
     if ((type === 'hire' && state.artists >= MAX_ARTISTS) || (type === 'speed' && state.speed >= 8) || (type === 'supply' && state.supply >= 6)) return;
     state.coins -= cost;
-    if (type === 'hire') { state.artists++; state.jobs.push(null); notify(t().hired); }
+    if (type === 'hire') { state.artists++; state.jobs.push(null); state.artistProgress.push(newArtist()); notify(t().hired); }
     if (type === 'speed') { state.speed++; notify(t().speedUp); }
     if (type === 'supply') { state.supply++; state.nextSupplyAt = Math.min(state.nextSupplyAt, Date.now() + 3000); notify(t().supplyUp); }
     save(); render();
@@ -187,6 +310,7 @@
   }
   function paintMural(mural, index, w, h, progress = 1, box = null, opacity = 1) {
     const seed = Number(mural.seed) || index + 1, rng = seeded(seed), style = artStyles.includes(mural.style) ? mural.style : 'wildstyle';
+    const skill = Math.max(1, Math.min(ARTIST_STAT_MAX, Math.floor(Number(mural.skill) || 1)));
     const look = styleLooks[style], word = (mural.word || 'ART').toUpperCase().slice(0, 10), chars = [...word];
     const advances = chars.map(ch => (['I','Л','Т','1'].includes(ch) ? 58 : ['М','Ш','Щ','W'].includes(ch) ? 83 : 73) * (.88 + rng()*.22));
     const total = advances.reduce((a,b)=>a+b,0) + 32, bw = box?.w || w*.86, bh = box?.h || h*.61;
@@ -196,7 +320,7 @@
     canvasCtx.save(); canvasCtx.globalAlpha *= opacity;
     canvasCtx.beginPath(); canvasCtx.rect(box?.x ?? 0, box?.y ?? 0, bw*p, box?.h ?? h); canvasCtx.clip();
     // Overspray halo and loose flecks frame the custom hand-built letter structure.
-    sprayCloud(canvasCtx,x0+actualW/2,y0+actualH/2,actualW*1.12,actualH*1.32,look.accent,rng,85,style==='chrome'?.16:.11);
+    sprayCloud(canvasCtx,x0+actualW/2,y0+actualH/2,actualW*1.12,actualH*1.32,look.accent,rng,85+(skill-1)*12,style==='chrome'?.16:.11);
     const palette = style==='chrome' ? ['#dffcff','#83d7e8','#52799d','#e9ffff'] : style==='bubble' ? ['#ff6fc9','#a25cff','#54e7d2','#ffd76e'] : style==='throwup' ? ['#ff965b','#ffe15f','#65ddc4','#f4f0e7'] : style==='hardcore' ? ['#ff3e53','#ff9d27','#d6e34d','#f2e7d0'] : ['#fa5148','#ffcb3d','#40e2dc','#a878ff'];
     const fill = mural.color || palette[Math.floor(rng()*palette.length)], fill2 = palette[Math.floor(rng()*palette.length)];
     // Loose connective ribbons sit behind the letters, linking the tag into one piece.
@@ -223,6 +347,8 @@
       // Angular cuts, hatch marks and tiny face facets distinguish the individual glyphs.
       canvasCtx.globalAlpha*=.8; canvasCtx.lineWidth=2.2; canvasCtx.strokeStyle=style==='chrome'?'#ffffff':fill2;
       canvasCtx.beginPath(); canvasCtx.moveTo(24,28); canvasCtx.lineTo(39,23); canvasCtx.lineTo(34,37); canvasCtx.moveTo(57,89); canvasCtx.lineTo(72,83); canvasCtx.stroke();
+      // Higher skill adds crisp, individually placed cuts inside every letter.
+      for(let mark=1;mark<skill;mark++) { const mx=18+((mark*19+glyph.charCodeAt(0))%62), my=20+((mark*31+glyph.charCodeAt(0))%88); canvasCtx.beginPath(); canvasCtx.moveTo(mx,my); canvasCtx.lineTo(mx+3+(mark%3),my-2); canvasCtx.stroke(); }
       if(style==='wildstyle'||style==='hardcore') { canvasCtx.fillStyle=look.accent; canvasCtx.beginPath(); canvasCtx.moveTo(35,47);canvasCtx.lineTo(53,42);canvasCtx.lineTo(45,53);canvasCtx.closePath();canvasCtx.fill(); }
       if(style==='bubble'||style==='throwup') { canvasCtx.fillStyle='#fff9e8'; canvasCtx.globalAlpha*=.72; canvasCtx.beginPath();canvasCtx.ellipse(37,34,5,2.4,-.6,0,Math.PI*2);canvasCtx.fill(); }
       canvasCtx.restore();
@@ -338,14 +464,18 @@
       if (!job || time - job.started < job.duration) return;
       // Remove the job before granting its reward: a saved completion can never pay twice.
       state.jobs[i] = null;
-      state.murals.push({ word: job.word, color: job.color, seed: job.seed, style: job.style || 'wildstyle', wallOrder: job.wallOrder });
+      const artistIndex = Number.isInteger(job.artist) ? job.artist : i;
+      state.murals.push({ word: job.word, color: job.color, seed: job.seed, style: job.style || 'wildstyle', wallOrder: job.wallOrder, skill: job.skill, specialization: job.specialization });
       state.murals = state.murals.slice(-12); state.drawings++;
-      const reward = rewardForLevel(job.level);
-      state.coins += reward; changed = true;
-      notify(t().completed.replace('{reward}', reward));
+      const reward = rewardForReputation(state.artistProgress[artistIndex]?.reputation);
+      state.coins += reward;
+      const levels = awardArtistXP(artistIndex, 60);
+      changed = true;
+      const completed = t().completed.replace('{reward}', reward);
+      notify(levels ? `${completed} · ${names[state.language][artistIndex]}: ${artistText[state.language].levelUp}` : completed);
     });
     if (time >= state.nextSupplyAt) deliverSupply();
-    if (changed) { save(); render(); }
+    if (changed) { activateNext(); save(); render(); }
     const left = Math.max(0, state.nextSupplyAt - time);
     $('supply-countdown').textContent = `${t().in} ${Math.ceil(left / 1000)} ${t().seconds}`;
     $('supply-title').textContent = t().supply;
@@ -355,8 +485,11 @@
     if (now - lastFrame >= 80) { renderCanvas(); lastFrame = now; }
   }
   function animationFrame(now) { updateTimers(now); requestAnimationFrame(animationFrame); }
+  const artistOverlay = $('artist-overlay');
   function openUpgrades() { overlay.classList.add('open'); overlay.setAttribute('aria-hidden', 'false'); $('close-upgrades').focus(); }
   function closeUpgrades() { overlay.classList.remove('open'); overlay.setAttribute('aria-hidden', 'true'); $('open-upgrades').focus(); }
+  function openArtists() { artistOverlay.classList.add('open'); artistOverlay.setAttribute('aria-hidden', 'false'); $('close-artists').focus(); }
+  function closeArtists() { artistOverlay.classList.remove('open'); artistOverlay.setAttribute('aria-hidden', 'true'); $('open-artists').focus(); }
   function clearProgress() {
     if (!window.confirm(t().confirmClear)) return;
     const language = state.language;
@@ -367,9 +500,16 @@
   function init() {
     $('open-upgrades').addEventListener('click', openUpgrades);
     $('close-upgrades').addEventListener('click', closeUpgrades);
+    $('open-artists').addEventListener('click', openArtists);
+    $('close-artists').addEventListener('click', closeArtists);
+    artistOverlay.addEventListener('click', event => { if (event.target === artistOverlay) closeArtists(); });
     $('clear-progress').addEventListener('click', clearProgress);
     overlay.addEventListener('click', event => { if (event.target === overlay) closeUpgrades(); });
-    document.addEventListener('keydown', event => { if (event.key === 'Escape' && overlay.classList.contains('open')) closeUpgrades(); });
+    document.addEventListener('keydown', event => {
+      if (event.key !== 'Escape') return;
+      if (artistOverlay.classList.contains('open')) closeArtists();
+      else if (overlay.classList.contains('open')) closeUpgrades();
+    });
     $('language').addEventListener('click', () => { state.language = state.language === 'ru' ? 'en' : 'ru'; save(); render(); });
     $('art-style').addEventListener('change', event => { state.artStyle = artStyles.includes(event.target.value) || event.target.value === 'random' ? event.target.value : 'wildstyle'; save(); render(); });
     window.addEventListener('resize', renderCanvas);

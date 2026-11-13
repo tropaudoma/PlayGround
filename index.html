@@ -17,6 +17,7 @@
       </a>
       <div class="top-actions">
         <div class="coin-pill" aria-label="Баланс"><span class="coin-icon">¢</span><strong id="coins">35</strong><small id="coins-label">МОНЕТЫ</small></div>
+        <button class="button button-secondary" id="open-artists" type="button"><span aria-hidden="true">♙</span> <span id="artist-management-label">ХУДОЖНИКИ</span></button>
         <button class="button button-secondary" id="open-upgrades" type="button"><span aria-hidden="true">✳</span> <span id="upgrade-label">УЛУЧШЕНИЯ</span></button>
         <button class="language-button" id="language" type="button" aria-label="Switch language">RU</button>
       </div>
@@ -31,7 +32,7 @@
         <div class="wall-frame">
           <canvas id="wall" aria-label="Большая кирпичная стена с художниками и растущими граффити"></canvas>
           <div class="wall-hud"><span class="live-indicator"></span><span id="wall-status">СТЕНА ОЖИВАЕТ</span><span class="hud-divider"></span><span id="active-count">0 МАСТЕРОВ</span></div>
-          <div class="reward-stamp"><span>НАГРАДА</span><b>+15–23 <i>¢</i></b><small>ЗА РИСУНОК</small></div>
+          <div class="reward-stamp"><span id="reward-label">НАГРАДА</span><b><span id="reward-value">+15–19</span> <i>¢</i></b><small id="reward-each">ЗА РИСУНОК</small></div>
         </div>
         <div class="wall-footer"><span id="wall-tip">Выбери инструмент и назначь мастера на стену.</span><label class="style-control"><span id="style-label">СТИЛЬ</span><select id="art-style" aria-label="Graffiti style"></select></label><span class="wall-caption"><i></i> WORK IN PROGRESS</span></div>
         <div class="artist-progress" id="artist-progress" aria-live="polite"></div>
@@ -58,8 +59,15 @@
       <div class="upgrade-window" role="dialog" aria-modal="true" aria-labelledby="upgrade-title">
         <div class="modal-heading"><div><p class="eyebrow" id="upgrade-kicker">РАЗВИВАЙ МАСТЕРСКУЮ</p><h2 id="upgrade-title">Улучшения</h2></div><button class="close-button" id="close-upgrades" type="button" aria-label="Закрыть">×</button></div>
         <div class="upgrade-list" id="upgrade-list"></div>
-        <p class="modal-footnote" id="upgrade-footnote">Каждый готовый мурал приносит ровно 15 монет.</p>
+        <p class="modal-footnote" id="upgrade-footnote">Базовая награда — 15 монет; репутация добавляет бонус.</p>
         <button class="clear-progress" id="clear-progress" type="button">Сбросить прогресс</button>
+      </div>
+    </section>
+    <section class="upgrade-overlay artist-overlay" id="artist-overlay" aria-hidden="true">
+      <div class="upgrade-window artist-window" role="dialog" aria-modal="true" aria-labelledby="artist-modal-title">
+        <div class="modal-heading"><div><p class="eyebrow" id="artist-modal-kicker">КОМАНДА И ПРОГРЕСС</p><h2 id="artist-modal-title">РАЗВИТИЕ ХУДОЖНИКОВ</h2></div><button class="close-button" id="close-artists" type="button" aria-label="Закрыть">×</button></div>
+        <p class="artist-modal-note" id="artist-modal-note">Работы выполняются по одной; художники ждут своей очереди.</p>
+        <div class="artist-manager"><nav class="artist-list" id="artist-list" aria-label="Художники"></nav><section class="artist-detail" id="artist-detail" aria-live="polite"></section></div>
       </div>
     </section>
     <div class="toast" id="toast" role="status" aria-live="polite"></div>
