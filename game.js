@@ -28,20 +28,25 @@
     state = saved && saved.version === 2 ? { ...freshState(), ...saved } : freshState();
   } catch { state = freshState(); }
   state.coins = Math.max(0, Math.floor(Number(state.coins) || 0));
+  state.drawings = Math.max(0, Math.floor(Number(state.drawings) || 0));
   state.artists = Math.max(1, Math.min(MAX_ARTISTS, Math.floor(Number(state.artists) || 1)));
   state.speed = Math.max(1, Math.min(8, Math.floor(Number(state.speed) || 1)));
   state.supply = Math.max(1, Math.min(6, Math.floor(Number(state.supply) || 1)));
   state.items = Array.from({ length: MAX_TOOLS }, (_, i) => Math.max(0, Math.min(6, Math.floor(Number(state.items?.[i]) || 0))));
   state.jobs = Array.from({ length: state.artists }, (_, i) => {
     const j = state.jobs?.[i];
-    return j && Number.isFinite(j.started) && Number.isFinite(j.duration) ? { started: j.started, duration: Math.max(5000, j.duration), level: Math.max(1, Math.min(6, j.level | 0)), color: muralColors.includes(j.color) ? j.color : muralColors[i % muralColors.length], word: typeof j.word === 'string' ? j.word : words.ru[i % words.ru.length], seed: Number(j.seed) || Math.random(), style: artStyles.includes(j.style) ? j.style : 'wildstyle', artist: i } : null;
+    return j && Number.isFinite(j.started) && Number.isFinite(j.duration) ? { started: j.started, duration: Math.max(5000, j.duration), level: Math.max(1, Math.min(6, j.level | 0)), color: muralColors.includes(j.color) ? j.color : muralColors[i % muralColors.length], word: typeof j.word === 'string' ? j.word : words.ru[i % words.ru.length], seed: Number(j.seed) || Math.random(), style: artStyles.includes(j.style) ? j.style : 'wildstyle', wallOrder: Number.isFinite(j.wallOrder) ? Math.max(0, Math.floor(j.wallOrder)) : state.drawings + i, artist: i } : null;
   });
-  state.murals = Array.isArray(state.murals) ? state.murals.slice(-12).map((m, i) => ({ word: typeof m.word === 'string' ? m.word : words.ru[i % 12], color: muralColors.includes(m.color) ? m.color : muralColors[i % muralColors.length], seed: Number(m.seed) || i + 1, style: artStyles.includes(m.style) ? m.style : 'wildstyle' })) : [];
+  const savedMurals = Array.isArray(state.murals) ? state.murals.slice(-12) : [];
+  const firstSavedOrder = Math.max(0, state.drawings - savedMurals.length);
+  state.murals = savedMurals.map((m, i) => ({ word: typeof m.word === 'string' ? m.word : words.ru[i % 12], color: muralColors.includes(m.color) ? m.color : muralColors[i % muralColors.length], seed: Number(m.seed) || i + 1, style: artStyles.includes(m.style) ? m.style : 'wildstyle', wallOrder: Number.isFinite(m.wallOrder) ? Math.max(0, Math.floor(m.wallOrder)) : firstSavedOrder + i }));
   state.language = state.language === 'en' ? 'en' : 'ru';
   state.artStyle = state.artStyle === 'random' || artStyles.includes(state.artStyle) ? state.artStyle : 'wildstyle';
   let selectedTool = -1;
   let toastTimer = 0;
   let lastFrame = performance.now();
+  let cameraX = null;
+  let lastCanvasFrame = performance.now();
   let ctx;
   const canvas = $('wall');
   const canvasCtx = canvas.getContext('2d');
@@ -65,7 +70,8 @@
     const level = state.items[toolIndex];
     state.items[toolIndex] = 0; selectedTool = -1;
     const style = state.artStyle === 'random' ? artStyles[Math.floor(Math.random() * artStyles.length)] : state.artStyle;
-    state.jobs[index] = { started: Date.now(), duration: durationFor(level), level, color: muralColors[Math.floor(Math.random() * muralColors.length)], word: words[state.language][Math.floor(Math.random() * words[state.language].length)], seed: Math.random(), style, artist: index };
+    const wallOrder = Math.max(state.drawings, ...state.murals.map(mural => mural.wallOrder + 1), ...state.jobs.filter(Boolean).map(job => job.wallOrder + 1));
+    state.jobs[index] = { started: Date.now(), duration: durationFor(level), level, color: muralColors[Math.floor(Math.random() * muralColors.length)], word: words[state.language][Math.floor(Math.random() * words[state.language].length)], seed: Math.random(), style, wallOrder, artist: index };
     notify(t().assigned); save(); render();
   }
   function mergeTools(from, to) {
@@ -260,37 +266,60 @@
     }
     canvasCtx.restore();
   }
-  function muralBox(index, count, w, h) {
-    if (count <= 1) return { x: w*.055, y: h*.08, w: w*.89, h: h*.69 };
-    const columns = count === 2 ? 2 : (w < 520 ? 2 : 3);
-    const rows = Math.ceil(count / columns), cellW = w / columns, regionY = h*.075, regionH = h*.70, cellH = regionH / rows;
-    return { x: index%columns*cellW + cellW*.035, y: regionY + Math.floor(index/columns)*cellH + cellH*.06, w: cellW*.93, h: cellH*.84 };
+  function muralBox(order, slotWidth, h) {
+    return { x: order * slotWidth + slotWidth * .035, y: h * .08, w: slotWidth * .93, h: h * .69 };
   }
-  function renderCanvas() {
+  function renderCanvas(now = performance.now()) {
     if (!canvas || !canvasCtx) return;
     const rect = canvas.getBoundingClientRect(); if (!rect.width || !rect.height) return;
     const dpr = Math.min(2, window.devicePixelRatio || 1);
     const width = Math.round(rect.width * dpr), height = Math.round(rect.height * dpr);
     if (canvas.width !== width || canvas.height !== height) { canvas.width = width; canvas.height = height; }
     canvasCtx.setTransform(dpr, 0, 0, dpr, 0, 0); canvasCtx.imageSmoothingEnabled = false;
-    const w = rect.width, h = rect.height; drawBackdrop(w, h);
+    const w = rect.width, h = rect.height, slotWidth = Math.max(360, w * .9);
     const completed = state.murals.slice(-12);
-    const pieces = completed.map(mural => ({ mural, progress: 1 }));
-    state.jobs.forEach(job => {
-      if (job) pieces.push({ mural: job, progress: Math.max(0, Math.min(1, (Date.now() - job.started) / job.duration)) });
+    const latestOrder = [...completed, ...state.jobs.filter(Boolean)].reduce((latest, mural) => Math.max(latest, mural.wallOrder || 0), 0);
+    const targetX = Math.max(0, (latestOrder + .5) * slotWidth - w * .5);
+    const elapsed = Math.min(100, Math.max(0, now - lastCanvasFrame));
+    cameraX = cameraX === null ? targetX : cameraX + (targetX - cameraX) * (1 - Math.exp(-elapsed / 180));
+    lastCanvasFrame = now;
+    drawBackdrop(w, h);
+    canvasCtx.save(); canvasCtx.translate(-cameraX, 0);
+    const firstVisible = Math.max(0, Math.floor(cameraX / slotWidth) - 1);
+    const lastVisible = Math.ceil((cameraX + w) / slotWidth) + 1;
+    completed.forEach((mural, i) => {
+      const order = Math.max(0, Number.isFinite(mural.wallOrder) ? mural.wallOrder : i);
+      if (order < firstVisible || order > lastVisible) return;
+      paintMural(mural, i, cameraX + w, h, 1, muralBox(order, slotWidth, h), 1);
     });
-    pieces.forEach(({ mural, progress }, i) => paintMural(mural, i, w, h, progress, muralBox(i, pieces.length, w, h), progress < 1 ? .94 : 1));
-    const active = state.jobs.map((job, i) => job ? i : -1).filter(i => i >= 0);
-    const artistCount = Math.max(1, state.artists);
-    for (let i = 0; i < artistCount; i++) {
-      const x = w * ((i + 1) / (artistCount + 1));
-      const working = active.includes(i);
-      drawArtist(x, h * .87, Math.max(.72, Math.min(1.05, w / 650)), i, working);
+    const busy = new Set();
+    state.jobs.forEach((job, i) => {
+      if (!job) return;
+      const x = job.wallOrder * slotWidth + slotWidth * .5;
+      busy.add(i);
+      if (x + 24 >= cameraX && x - 24 <= cameraX + w) {
+        const progress = Math.max(0, Math.min(1, (Date.now() - job.started) / job.duration));
+        paintMural(job, i, cameraX + w, h, progress, muralBox(job.wallOrder, slotWidth, h), progress < 1 ? .94 : 1);
+        drawArtist(x, h * .87, Math.max(.72, Math.min(1.05, w / 650)), i, true);
+      }
+    });
+    const idle = state.artists - busy.size;
+    let idleIndex = 0;
+    for (let i = 0; i < state.artists; i++) {
+      if (busy.has(i)) continue;
+      const x = latestOrder * slotWidth + slotWidth * .79 + (idleIndex - (idle - 1) / 2) * 28;
+      idleIndex++;
+      if (x + 24 >= cameraX && x - 24 <= cameraX + w) drawArtist(x, h * .87, Math.max(.72, Math.min(1.05, w / 650)), i, false);
     }
-    // Subtle brick seams keep the wall tactile without obscuring artwork.
+    // Brick seams move with the wall, while the alley backdrop stays in place.
     canvasCtx.globalAlpha = .12; canvasCtx.strokeStyle = '#101614'; canvasCtx.lineWidth = 1;
-    for (let y = 0; y < h * .84; y += 17) { canvasCtx.beginPath(); canvasCtx.moveTo(0, y); canvasCtx.lineTo(w, y); canvasCtx.stroke(); }
-    canvasCtx.globalAlpha = 1;
+    const firstSeam = Math.floor(cameraX / 48) * 48;
+    for (let y = 0; y < h * .84; y += 17) {
+      canvasCtx.beginPath();
+      for (let x = firstSeam; x <= cameraX + w + 48; x += 48) { canvasCtx.moveTo(x, y); canvasCtx.lineTo(x + 24, y); }
+      canvasCtx.stroke();
+    }
+    canvasCtx.globalAlpha = 1; canvasCtx.restore();
   }
   function deliverSupply() {
     if (inventoryCount() >= MAX_TOOLS) { state.nextSupplyAt = Date.now() + 4000; return; }
@@ -309,7 +338,7 @@
       if (!job || time - job.started < job.duration) return;
       // Remove the job before granting its reward: a saved completion can never pay twice.
       state.jobs[i] = null;
-      state.murals.push({ word: job.word, color: job.color, seed: job.seed, style: job.style || 'wildstyle' });
+      state.murals.push({ word: job.word, color: job.color, seed: job.seed, style: job.style || 'wildstyle', wallOrder: job.wallOrder });
       state.murals = state.murals.slice(-12); state.drawings++;
       const reward = rewardForLevel(job.level);
       state.coins += reward; changed = true;
@@ -332,7 +361,7 @@
     if (!window.confirm(t().confirmClear)) return;
     const language = state.language;
     state = freshState(); state.language = language;
-    selectedTool = -1;
+    selectedTool = -1; cameraX = null;
     save(); render(); renderCanvas(); closeUpgrades(); notify(t().cleared);
   }
   function init() {
