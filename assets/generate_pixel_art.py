@@ -44,38 +44,24 @@ class Image:
         def chunk(tag, data): return struct.pack('!I',len(data))+tag+data+struct.pack('!I',zlib.crc32(tag+data)&0xffffffff)
         Path(path).write_bytes(b'\x89PNG\r\n\x1a\n'+chunk(b'IHDR',struct.pack('!2I5B',self.w,self.h,8,6,0,0,0))+chunk(b'IDAT',zlib.compress(raw,9))+chunk(b'IEND',b''))
 
-# 210 x 90 painted alley backdrop. Each block is intentionally authored at game resolution.
+# 210 x 90 backdrop: the mural wall is the main scene, with only a narrow floor strip.
 bg=Image(210,90)
-bg.rect(0,0,210,90,(22,30,48,255)); bg.rect(0,0,210,13,(28,37,57,255))
-# distant rooftop silhouettes and tiny lit windows
-bg.rect(0,7,30,17,(18,27,42,255)); bg.rect(4,3,7,17,(18,27,42,255)); bg.rect(177,4,33,22,(17,25,40,255)); bg.rect(183,0,8,24,(17,25,40,255))
-for x,y in [(8,8),(21,13),(185,10),(198,7)]: bg.rect(x,y,2,3,(218,166,83,255))
-# overhead cable and warm lamp
-bg.line(0,7,67,9,(9,16,27,255),1); bg.line(138,6,210,4,(9,16,27,255),1)
-bg.rect(24,7,2,5,(89,66,59,255)); bg.rect(21,11,8,2,(139,94,58,255)); bg.rect(23,13,4,3,(255,197,91,255)); bg.rect(20,16,10,1,(221,150,69,255))
-# brick wall
-bg.rect(7,14,192,58,(89,65,58,255)); bg.rect(8,15,190,55,(151,99,69,255)); bg.rect(8,15,190,3,(190,131,84,255))
-for row,y in enumerate(range(20,71,7)):
-    bg.rect(8,y,190,1,(106,71,59,255)); off=0 if row%2 else 8
-    for x in range(8+off,199,16):
-        bg.rect(x,y-5,1,6,(110,73,58,255)); bg.rect(x+1,y-5,1,1,(174,115,75,255))
-# wall weathering, small moss patches
-for x,y,w in [(13,29,8),(182,22,10),(34,63,5),(164,55,7),(190,43,4)]: bg.rect(x,y,w,1,(125,92,68,255))
-bg.rect(8,67,190,5,(112,75,55,255)); bg.rect(8,67,190,1,(202,141,83,255))
-# left drain pipe and right conduit
-bg.rect(16,16,4,54,(55,57,60,255)); bg.rect(17,16,1,52,(126,119,99,255)); bg.rect(14,24,7,2,(74,74,68,255)); bg.rect(14,59,7,2,(74,74,68,255))
-bg.rect(193,15,3,53,(65,68,66,255)); bg.rect(192,24,5,2,(113,107,83,255)); bg.rect(192,59,5,2,(113,107,83,255))
-# Leave the masonry blank: completed jobs paint persistent pixel-art murals at runtime.
-# The pipes, brick seams and weathering remain visible beneath every new design.
-# sidewalk curb, paving, puddles
-bg.rect(0,72,210,3,(73,73,75,255)); bg.rect(0,72,210,1,(186,143,89,255)); bg.rect(0,75,210,15,(40,47,56,255))
-for x in range(0,210,16): bg.rect(x,80,10,1,(70,73,73,255)); bg.rect(x+10,84,1,6,(70,73,73,255))
-bg.rect(7,86,26,1,(48,123,128,255)); bg.rect(11,87,11,1,(45,76,108,255))
-# low crates, bottles, paint cans and litter props
-bg.rect(24,66,13,6,(54,49,50,255)); bg.rect(25,67,11,1,(116,83,56,255)); bg.rect(28,69,2,2,(39,38,44,255))
-for x,c in [(41,(244,159,68,255)),(48,(76,181,190,255)),(171,(231,100,92,255)),(179,(180,119,187,255)),(187,(239,183,77,255))]:
-    bg.rect(x,67,5,6,(38,40,47,255)); bg.rect(x,68,5,4,c); bg.rect(x+1,66,3,2,(215,207,172,255)); bg.rect(x+1,70,3,1,(49,53,56,255))
-bg.rect(157,69,6,2,(207,177,106,255)); bg.rect(160,68,2,1,(228,216,174,255))
+bg.rect(0,0,210,90,(38,43,52,255))
+# Broad, uninterrupted masonry gives the active and completed art most of the canvas.
+bg.rect(1,1,208,82,(89,65,58,255)); bg.rect(3,2,204,79,(151,99,69,255)); bg.rect(3,2,204,3,(190,131,84,255))
+for row,y in enumerate(range(10,81,8)):
+    bg.rect(3,y,204,1,(106,71,59,255)); off=0 if row%2 else 8
+    for x in range(3+off,207,16):
+        bg.rect(x,y-6,1,7,(110,73,58,255)); bg.rect(x+1,y-6,1,1,(174,115,75,255))
+# Subtle weathering keeps the oversized painting surface from feeling flat.
+for x,y,w in [(10,23,8),(190,18,10),(38,70,5),(166,58,7),(196,42,4)]: bg.rect(x,y,w,1,(125,92,68,255))
+# Slim edge pipes frame rather than compete with the graffiti.
+bg.rect(2,3,3,76,(55,57,60,255)); bg.rect(3,3,1,74,(126,119,99,255)); bg.rect(1,17,5,2,(74,74,68,255)); bg.rect(1,65,5,2,(74,74,68,255))
+bg.rect(205,3,3,76,(65,68,66,255)); bg.rect(205,17,5,2,(113,107,83,255)); bg.rect(205,65,5,2,(113,107,83,255))
+# A thin curb and pavement retain the alley setting without taking space from the wall.
+bg.rect(0,83,210,2,(73,73,75,255)); bg.rect(0,83,210,1,(186,143,89,255)); bg.rect(0,85,210,5,(40,47,56,255))
+for x in range(0,210,20): bg.rect(x,87,13,1,(70,73,73,255))
+bg.rect(12,89,20,1,(48,123,128,255)); bg.rect(176,89,12,1,(45,76,108,255))
 bg.save(OUT/'alley.png')
 
 # Palette-coded pixel character: 24x32. Four independent animation frames.
