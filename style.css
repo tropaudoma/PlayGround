@@ -3,3 +3,14 @@
 @media(max-width:390px){.game-shell{grid-template-rows:37px minmax(158px,.65fr) minmax(0,1.35fr);gap:5px;padding:5px}.brand b{font-size:9px}.brand-mark{width:30px;height:30px}.top-meta{gap:4px}.upgrade-open,.lang-button{padding:0 5px;font-size:7px}.coin-pill{min-width:74px}.scene-wrap{min-height:65px}.scene-heading h1{font-size:12px}.panel{padding:6px}.board-cell .tool{font-size:22px}.merge-board{gap:3px}.hint{margin:3px 0 4px}.spawn-meter{width:30px}.spawn-copy small{font-size:5.5px}}
 @media(max-height:650px) and (min-width:761px){.game-shell{grid-template-rows:40px minmax(160px,.72fr) minmax(250px,1.28fr) 16px;gap:6px;padding-top:6px;padding-bottom:5px}.scene-wrap{min-height:72px}.scene-heading h1{font-size:14px}.artist-strip{height:34px;flex-basis:34px}.panel{padding:7px 9px}.hint{margin:3px 0 5px}.board-frame{padding:4px}.merge-board{gap:4px}.board-cell .tool{width:34px;height:34px;font-size:24px}.spawn-row{height:28px;flex-basis:28px}.item-legend{min-height:18px}.side-column{gap:5px}}
 @media(max-width:760px) and (orientation:landscape) and (max-height:520px){.game-shell{grid-template-columns:minmax(210px,.82fr) minmax(0,1.18fr);grid-template-rows:35px minmax(0,1fr);gap:6px;padding:5px}.topbar{grid-column:1/-1}.workshop-card{grid-column:1;grid-row:2}.content-grid{grid-column:2;grid-row:2}.scene-heading{min-height:23px}.scene-wrap{min-height:40px}.artist-strip{height:28px;flex-basis:28px}.artist-summary small{display:none}.artist-summary{grid-template-rows:22px}.board-cell .tool{font-size:19px;width:28px;height:28px}.hint{display:none}.board-frame{padding:3px}.spawn-row{height:25px;flex-basis:25px}.item-legend{display:none}}
+
+/* Crisp, image-based pixel-art inventory and crew icons. */
+.board-cell .tool{object-fit:contain;image-rendering:pixelated}
+.legend-icon{width:18px;height:18px;object-fit:contain;vertical-align:middle;image-rendering:pixelated}
+.collection-slot img{width:76%;height:76%;object-fit:contain;image-rendering:pixelated}
+.upgrade-icon img{width:24px;height:24px;object-fit:contain;image-rendering:pixelated}
+.upgrade-pixel{display:block;width:24px;height:30px;background-image:url('assets/pixel/sprites.png');background-repeat:no-repeat;background-size:600% 200%;background-position:0 0;image-rendering:pixelated}
+.artist-icon{background-image:url('assets/pixel/sprites.png');background-repeat:no-repeat;background-size:600% 200%;background-position:0 0;image-rendering:pixelated;color:transparent;font-size:0}
+.wall-icon{width:20px;height:20px;object-fit:contain;vertical-align:middle;image-rendering:pixelated}
+.scene-wrap{background:#1b2632 url('assets/pixel/alley.png') center/cover no-repeat}
+
