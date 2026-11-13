@@ -254,4 +254,55 @@ h1, h2, p { margin-top: 0; }
   .progress-card { padding: 5px; }
   .progress-card-top { margin-bottom: 4px; }
 }
+.artist-window { width: min(760px,100%); }
+.artist-modal-note { margin: 12px 0 0; color: var(--muted); font-size: 10px; }
+.artist-manager { display: grid; grid-template-columns: minmax(150px,.72fr) minmax(0,1.8fr); gap: 16px; padding-top: 14px; }
+.artist-list { min-width: 0; display: grid; align-content: start; gap: 6px; }
+.artist-select { min-width: 0; display: grid; grid-template-columns: 35px minmax(0,1fr); align-items: center; gap: 2px 9px; padding: 8px; border: 1px solid var(--line); background: #171b19; color: var(--text); text-align: left; cursor: pointer; }
+.artist-select:hover, .artist-select.active { border-color: #76865b; background: #252c21; }
+.artist-select .crew-avatar { grid-row: span 2; }
+.artist-select>span:nth-child(2) { overflow: hidden; font: 700 15px/1 var(--display); white-space: nowrap; text-overflow: ellipsis; }
+.artist-select small { overflow: hidden; color: var(--muted); font-size: 8px; white-space: nowrap; text-overflow: ellipsis; }
+.artist-detail { min-width: 0; }
+.artist-detail-head { display: flex; justify-content: space-between; align-items: center; gap: 12px; padding-bottom: 10px; border-bottom: 1px solid var(--line); }
+.artist-detail-head .eyebrow { margin: 0 0 3px; }
+.artist-detail-head h3 { margin: 0; font: 700 25px/1 var(--display); }
+.artist-detail-head>b { padding: 6px 9px; border: 1px solid #536044; color: var(--acid); font: 700 12px var(--display); white-space: nowrap; }
+.artist-xp { margin: 12px 0 8px; }
+.artist-xp>div { display: flex; justify-content: space-between; gap: 8px; margin-bottom: 6px; color: var(--muted); font-size: 9px; }
+.artist-xp>div b { color: var(--text); }
+.artist-xp>i, .artist-xp>i>span { display: block; height: 5px; background: #333a35; }
+.artist-xp>i>span { max-width: 100%; background: var(--acid); transition: width .2s; }
+.artist-reward { margin: 8px 0 12px; color: #d7ddce; font-size: 10px; }
+.artist-reward>b { color: var(--acid); }
+.artist-reward small { color: var(--muted); }
+.artist-stats { display: grid; gap: 5px; }
+.artist-stat { min-height: 52px; display: grid; grid-template-columns: 27px minmax(0,1fr) auto; align-items: center; gap: 7px; padding: 5px 0; border-top: 1px solid #303733; }
+.artist-stat-icon { color: var(--acid); font-size: 16px; text-align: center; }
+.artist-stat-copy { min-width: 0; }
+.artist-stat-copy b, .artist-stat-copy small { display: block; }
+.artist-stat-copy b { font: 700 14px/1.1 var(--display); }
+.artist-stat-copy small { margin-top: 3px; color: var(--muted); font-size: 8px; }
+.artist-stat .buy-button { min-width: 78px; padding: 6px; font-size: 9px; }
+.artist-specialty { margin-top: 10px; padding: 9px; border: 1px solid #536044; background: #22291e; }
+.artist-specialty b, .artist-specialty small { display: block; }
+.artist-specialty b { color: var(--acid); font: 700 12px/1.2 var(--display); }
+.artist-specialty small { margin-top: 4px; color: var(--muted); font-size: 9px; }
+.artist-specialty.locked { border-color: var(--line); background: #171b19; }
+.artist-specialty.locked b { color: var(--muted); }
+.specialization-picker { margin-top: 10px; }
+.specialization-picker>b { display: block; margin-bottom: 7px; color: var(--acid); font: 700 12px var(--display); }
+.specialization-picker>div { display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); gap: 5px; }
+.specialization-picker button { min-height: 32px; border: 1px solid #566448; background: #293222; color: var(--acid); font: 700 9px var(--display); cursor: pointer; }
+.specialization-picker button:hover { background: #3a482c; }
+@media (max-width: 560px) {
+  .artist-window { padding: 14px; }
+  .artist-manager { grid-template-columns: 1fr; gap: 12px; }
+  .artist-list { grid-template-columns: repeat(2,minmax(0,1fr)); }
+  .artist-select { grid-template-columns: 28px minmax(0,1fr); padding: 6px; gap: 2px 6px; }
+  .artist-select .crew-avatar { width: 25px; height: 34px; }
+  .artist-select .crew-avatar::before { left: 7px; width: 11px; height: 11px; }
+  .artist-select .crew-avatar::after { left: 4px; width: 17px; }
+  .artist-select>span:nth-child(2) { font-size: 13px; }
+}
 @media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation-duration: .01ms !important; transition-duration: .01ms !important; } }
